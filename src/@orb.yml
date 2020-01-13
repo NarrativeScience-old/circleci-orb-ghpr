@@ -1,0 +1,23 @@
+version: 2.1
+description: Bundle of utils for GitHub pull requests
+
+examples:
+  test-pull-request:
+    description: |
+      Run pull request tests on a temporary branch resulting from merging the
+      PR's head branch into the base branch, and send a comment on test failure.
+    usage:
+      version: 2.1
+      orbs:
+        jq: circleci/jq@1.9.0
+        gh-pr: narrativescience/gh-pr@0.0.2
+      jobs:
+        run-test:
+          docker:
+            - image: circleci/python:3.7.1
+          steps:
+            - gh-pr/build-prospective-branch
+            - some-test-command
+            - gh-pr/post-pr-comment:
+                comment: "some message"
+                when: on_fail

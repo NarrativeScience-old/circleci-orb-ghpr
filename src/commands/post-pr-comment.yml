@@ -1,0 +1,26 @@
+description: |
+  Post a comment on the pull request. Requires `GITHUB_USERNAME` and `GITHUB_PASSWORD`
+  to be set as an environment variables.
+parameters:
+  comment:
+    description: Content of the comment to post
+    type: string
+  when:
+    description: Condition for when the comment should be created
+    type: enum
+    enum:
+      - on_success
+      - on_fail
+      - always
+    default: on_success
+steps:
+  - run:
+      name: Post comment to PR
+      command: |
+        GITHUB_PR_NUMBER=$(echo "$CIRCLE_PULL_REQUEST" | sed "s/.*\/pull\///")
+        curl \
+          -X POST \
+          -d "{\"body\": \"<< parameters.comment >>\"}" \
+          --user "${GITHUB_USERNAME}:${GITHUB_PASSWORD}" \
+          "https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/issues/${GITHUB_PR_NUMBER}/comments"
+      when: << parameters.when >>

@@ -1,0 +1,22 @@
+description: |
+  Builds the prospective merge branch by merging the head branch
+  into the pull request's base branch.
+parameters:
+  force:
+    description: |
+      If `true`, this command will exit successfully even if the merge fails.
+      By default, this is disabled, to allow failing when a merge conflict occurs.
+    type: boolean
+    default: false
+steps:
+  - checkout
+  - get-base-branch
+  - run:
+      name: Build prospective merge branch
+      command: |
+        set +e
+        git fetch && git merge "origin/$GITHUB_PR_BASE_BRANCH" --no-edit
+        if [[ $? -ne 0 && "<< parameters.force >>" == "false" ]]; then
+          echo "Failed to merge $GITHUB_PR_BASE_BRANCH into $CIRCLE_BRANCH"
+          exit 1
+        fi

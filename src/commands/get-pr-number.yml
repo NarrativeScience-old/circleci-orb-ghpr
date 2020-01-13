@@ -1,0 +1,8 @@
+description: Get the number of the pull request
+steps:
+  - run:
+      name: Get PR number
+      command: |
+        pr_number=$(echo "$CIRCLE_PULL_REQUEST" | sed "s/.*\/pull\///")
+        echo "$pr_number"
+        echo "export GITHUB_PR_NUMBER=$pr_number" >> $BASH_ENV

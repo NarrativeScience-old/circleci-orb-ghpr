@@ -1,0 +1,18 @@
+description: |
+  Get the base branch for the pull request. Requires `GITHUB_USERNAME` and `GITHUB_PASSWORD`
+  to be set as an environment variables.
+steps:
+  - run:
+      name: Get the base branch
+      command: |
+        # Check `jq` dependency
+        if ! (command -v jq >/dev/null 2>&1); then
+          echo "This command requires `jq` to be installed"
+          exit 1
+        fi
+
+        GITHUB_PR_NUMBER=$(echo "$CIRCLE_PULL_REQUEST" | sed "s/.*\/pull\///")
+        url="https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/pulls/${GITHUB_PR_NUMBER}"
+        base_branch=$(curl --user "${GITHUB_USERNAME}:${GITHUB_PASSWORD}" "$url" | jq -e '.base.ref' | tr -d '"')
+        echo "$base_branch"
+        echo "export GITHUB_PR_BASE_BRANCH=$base_branch" >> $BASH_ENV
