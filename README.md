@@ -9,6 +9,7 @@ To use, create a service GitHub user with at least Read access to your repositor
 
 * `GITHUB_USERNAME` - Username of the service user that has read/write permissions to the repo.
 * `GITHUB_PASSWORD` - Password of the service user.
+* `GITHUB_EMAIL` - Email of the service user.
 
 The commands in the orb will expose the following environment variables:
 

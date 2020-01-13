@@ -1,6 +1,6 @@
 description: |
-  Get the base branch for the pull request. Requires `GITHUB_USERNAME` and `GITHUB_PASSWORD`
-  to be set as an environment variables.
+  Get the base branch for the pull request.
+  Requires `GITHUB_USERNAME` and `GITHUB_PASSWORD` to be set as environment variables.
 steps:
   - run:
       name: Get the base branch

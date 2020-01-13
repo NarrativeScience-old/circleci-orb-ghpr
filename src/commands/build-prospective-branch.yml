@@ -1,6 +1,6 @@
 description: |
-  Builds the prospective merge branch by merging the head branch
-  into the pull request's base branch.
+  Builds the prospective merge branch by merging the head branch into the pull request's base branch.
+  Requires `GITHUB_EMAIL` and `GITHUB_USERNAME` to be set as environment variables.
 parameters:
   force:
     description: |
@@ -15,6 +15,8 @@ steps:
       name: Build prospective merge branch
       command: |
         set +e
+        git config --global user.email "$GITHUB_EMAIL"
+        git config --global user.name "$GITHUB_USERNAME"
         git fetch && git merge "origin/$GITHUB_PR_BASE_BRANCH" --no-edit
         if [[ $? -ne 0 && "<< parameters.force >>" == "false" ]]; then
           echo "Failed to merge $GITHUB_PR_BASE_BRANCH into $CIRCLE_BRANCH"
