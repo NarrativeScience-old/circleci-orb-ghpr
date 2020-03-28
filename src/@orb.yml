@@ -9,14 +9,14 @@ examples:
       version: 2.1
       orbs:
         jq: circleci/jq@1.9.0
-        gh-pr: narrativescience/gh-pr@0.0.3
+        ghpr: narrativescience/ghpr@0.1.0
       jobs:
         run-test:
           docker:
             - image: circleci/python:3.7.1
           steps:
-            - gh-pr/build-prospective-branch
+            - ghpr/build-prospective-branch
             - some-test-command
-            - gh-pr/post-pr-comment:
+            - ghpr/post-pr-comment:
                 comment: "some message"
                 when: on_fail

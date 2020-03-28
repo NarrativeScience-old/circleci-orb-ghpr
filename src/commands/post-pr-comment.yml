@@ -16,6 +16,7 @@ parameters:
 steps:
   - run:
       name: Post comment to PR
+      when: << parameters.when >>
       command: |
         GITHUB_PR_NUMBER=$(echo "$CIRCLE_PULL_REQUEST" | sed "s/.*\/pull\///")
         curl \
@@ -23,4 +24,3 @@ steps:
           -d "{\"body\": \"<< parameters.comment >>\"}" \
           --user "${GITHUB_USERNAME}:${GITHUB_PASSWORD}" \
           "https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/issues/${GITHUB_PR_NUMBER}/comments"
-      when: << parameters.when >>
