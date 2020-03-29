@@ -74,7 +74,7 @@ steps:
         CHANNEL=$SLACK_USER_ID
 
         if [[ -n << parameters.channel >> ]]; then
-          MESSAGE="$MESSAGE\n<@SLACK_USER_ID>"
+          MESSAGE="$MESSAGE\n<@$SLACK_USER_ID>"
           CHANNEL=<< parameters.channel >>
         fi
 
