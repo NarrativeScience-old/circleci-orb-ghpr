@@ -22,7 +22,7 @@ jobs:
     steps:
       - ghpr/build-prospective-branch
       - ghpr/slack-pr-author:
-          message: yay!
+          message: ":tada: Tests passed!"
 
   publish:
     machine: true
