@@ -75,7 +75,7 @@ steps:
 
         if [[ -n << parameters.channel >> ]]; then
           MESSAGE="$MESSAGE\n<@SLACK_USER_ID>"
-          CHANNEL=<< parameters.chanell >>
+          CHANNEL=<< parameters.channel >>
         fi
 
         BLOCKS="[
