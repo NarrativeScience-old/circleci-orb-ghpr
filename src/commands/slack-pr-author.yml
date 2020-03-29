@@ -65,7 +65,7 @@ steps:
                     "https://slack.com/api/users.lookupByEmail")
         SLACK_USER_ID=$(echo $SLACK_USER | jq -e '.user.id' | tr -d '"')
 
-        if [[ $SLACK_USER_ID == null ]]; then
+        if [[ $SLACK_USER_ID == "null" ]]; then
           echo "No Slack user found with email $PR_AUTHOR_EMAIL"
           exit 1
         fi
