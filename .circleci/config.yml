@@ -21,7 +21,6 @@ jobs:
     machine: true
     steps:
       - ghpr/build-prospective-branch
-      - pack-validate
       - ghpr/slack-pr-author:
           message: yay!
 
