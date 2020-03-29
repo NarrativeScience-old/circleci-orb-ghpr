@@ -4,19 +4,20 @@ description: Bundle of utils for GitHub pull requests
 examples:
   test-pull-request:
     description: |
-      Run pull request tests on a temporary branch resulting from merging the PR's head branch into the base branch, and send a comment on test failure.
+      Run pull request tests on a temporary branch resulting from merging the PR's head branch into the base branch. Post a PR comment on test failure, but Slack the author on success.
     usage:
       version: 2.1
       orbs:
         jq: circleci/jq@1.9.0
-        ghpr: narrativescience/ghpr@0.1.0
+        ghpr: narrativescience/ghpr@x.y.z
       jobs:
         run-test:
-          docker:
-            - image: circleci/python:3.7.1
+          machine: true
           steps:
             - ghpr/build-prospective-branch
             - some-test-command
             - ghpr/post-pr-comment:
                 comment: "some message"
                 when: on_fail
+            - ghpr/slack-pr-author:
+                message: ":tada: Tests passed!"
