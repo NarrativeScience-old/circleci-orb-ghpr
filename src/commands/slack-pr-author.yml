@@ -87,7 +87,7 @@ steps:
               \"text\": \"$MESSAGE\"
             },
             \"accessory\": {
-              \"type: \"button\",
+              \"type\": \"button\",
               \"text\": {
                 \"type\": \"plain_text\",
                 \"text\": \"Visit Job\"
@@ -99,7 +99,7 @@ steps:
             \"type\": \"section\",
             \"text\": {
               \"type\": \"mrkdwn\",
-              \"text\": \"*Pull Request:*\n<$CIRCLE_PULL_REQUEST|$PR_TITLE>\"
+              \"text\": \"*Pull Request:* <$CIRCLE_PULL_REQUEST|$PR_TITLE>\"
             }
           },
           {
