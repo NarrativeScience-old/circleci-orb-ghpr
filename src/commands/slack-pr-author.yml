@@ -31,13 +31,13 @@ steps:
       command: |
         # Check `jq` dependency
         if ! (command -v jq >/dev/null 2>&1); then
-          echo "This command requires `jq` to be installed"
+          echo "This command requires jq to be installed"
           exit 1
         fi
 
         # Check `SLACK_OAUTH_TOKEN` is set
         if [[ -z ${SLACK_OAUTH_TOKEN+x} ]]; then
-          echo "This command requires `SLACK_OAUTH_TOKEN` to be set"
+          echo "This command requires SLACK_OAUTH_TOKEN to be set"
           exit 1
         fi
 
