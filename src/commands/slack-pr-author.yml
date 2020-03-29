@@ -57,7 +57,7 @@ steps:
         COMMIT_REQUEST_URL="$API_GITHUB/commits/$MERGE_COMMIT_SHA"
         COMMIT_RESPONSE=$(curl --user "${GITHUB_USERNAME}:${GITHUB_PASSWORD}" "$COMMIT_REQUEST_URL")
         PR_AUTHOR_EMAIL=$(echo $COMMIT_RESPONSE | jq -e '.commit.author.email' | tr -d '"')
-
+        echo "$PR_AUTHOR_EMAIL"
         SLACK_USER=$(curl -H 'Content-Type: application/x-www-form-urlencoded' \
                     -H 'Cache-Control: no-cache' \
                     -d "token=$SLACK_OAUTH_TOKEN" \
@@ -65,6 +65,7 @@ steps:
                     "https://slack.com/api/users.lookupByEmail")
         SLACK_USER_ID=$(echo $SLACK_USER | jq -e '.user.id' | tr -d '"')
 
+        echo "$SLACK_USER_ID"
         if [[ $SLACK_USER_ID == "null" ]]; then
           echo "No Slack user found with email $PR_AUTHOR_EMAIL"
           exit 1
@@ -77,6 +78,7 @@ steps:
           MESSAGE="$MESSAGE\n<@$SLACK_USER_ID>"
           CHANNEL=<< parameters.channel >>
         fi
+        echo "$MESSAGE"
 
         BLOCKS="[
           {
