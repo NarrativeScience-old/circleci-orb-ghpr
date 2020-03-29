@@ -36,8 +36,8 @@ steps:
         fi
 
         # Check `SLACK_OAUTH_TOKEN` is set
-        if [[ -z ${var+x} ]]; then
-          echo "This command required `SLACK_OAUTH_TOKEN` to be set"
+        if [[ -z ${SLACK_OAUTH_TOKEN+x} ]]; then
+          echo "This command requires `SLACK_OAUTH_TOKEN` to be set"
           exit 1
         fi
 
