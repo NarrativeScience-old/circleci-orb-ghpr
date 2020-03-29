@@ -27,13 +27,13 @@ jobs:
 
   publish:
     machine: true
-      steps:
-        - pack-validate
-        - run:
-            name: Publish new orb version
-            command: |
-              # TODO figure out how to configure CLI so publishing works
-              circleci orb publish orb.yml "narrativescience/ghpr@$CIRCLE_TAG"
+    steps:
+      - pack-validate
+      - run:
+          name: Publish new orb version
+          command: |
+            # TODO figure out how to configure CLI so publishing works
+            circleci orb publish orb.yml "narrativescience/ghpr@$CIRCLE_TAG"
 
 workflows:
   pull_request:
