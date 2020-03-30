@@ -8,7 +8,6 @@ examples:
     usage:
       version: 2.1
       orbs:
-        jq: circleci/jq@1.9.0
         ghpr: narrativescience/ghpr@x.y.z
       jobs:
         run-test:
