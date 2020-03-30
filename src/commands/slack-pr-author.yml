@@ -1,0 +1,128 @@
+description: |
+  Send a Slack direct message to the PR author, or to a channel, @mentioning the PR author.
+  Requires `SLACK_OAUTH_TOKEN` to be set as an environment variable.
+
+  For more details, see https://github.com/NarrativeScience/circleci-orb-ghpr#enabling-slack-notifactions
+parameters:
+  message:
+    description: |
+      The message to send.
+      Supports Slack mrkdown syntax - https://api.slack.com/reference/surfaces/formatting#basics
+    type: string
+  when:
+    description: Condition for when the DM should be sent
+    type: enum
+    enum:
+      - on_success
+      - on_fail
+      - always
+    default: on_success
+  channel:
+    description: |
+      Optional channel to send a message to, ex. `#some-channel`.
+      If provided, will message the channel but @mention the PR author.
+      Otherwise, the message is sent to the PR author directly.
+    type: string
+    default: ""
+steps:
+  - run:
+      name: Slack PR author
+      when: << parameters.when >>
+      command: |
+        # Check `jq` dependency
+        if ! (command -v jq >/dev/null 2>&1); then
+          echo "This command requires jq to be installed"
+          exit 1
+        fi
+
+        # Check `SLACK_OAUTH_TOKEN` is set
+        if [[ -z ${SLACK_OAUTH_TOKEN+x} ]]; then
+          echo "This command requires SLACK_OAUTH_TOKEN to be set"
+          exit 1
+        fi
+
+        API_GITHUB="https://api.github.com/repos/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME"
+
+        GITHUB_PR_NUMBER=$(echo "$CIRCLE_PULL_REQUEST" | sed "s/.*\/pull\///")
+        PR_REQUEST_URL="$API_GITHUB/pulls/$GITHUB_PR_NUMBER"
+        PR_RESPONSE=$(curl --user "${GITHUB_USERNAME}:${GITHUB_PASSWORD}" "$PR_REQUEST_URL")
+        PR_TITLE=$(echo $PR_RESPONSE | jq -e '.title' | tr -d '"')
+
+        # Get the merge_commit_sha. This is so we can message the PR author, not the commit
+        # author who may not be the PR author.
+        MERGE_COMMIT_SHA=$(echo $PR_RESPONSE | jq -e '.merge_commit_sha' | tr -d '"')
+
+        # Sadly, PR_RESPONSE doesn't include the email associated with the MERGE_COMMIT_SHA.
+        # So we have to get that from the commit information.
+        COMMIT_REQUEST_URL="$API_GITHUB/commits/$MERGE_COMMIT_SHA"
+        COMMIT_RESPONSE=$(curl --user "${GITHUB_USERNAME}:${GITHUB_PASSWORD}" "$COMMIT_REQUEST_URL")
+        PR_AUTHOR_EMAIL=$(echo $COMMIT_RESPONSE | jq -e '.commit.author.email' | tr -d '"')
+
+        SLACK_USER=$(curl -H 'Content-Type: application/x-www-form-urlencoded' \
+                    -H 'Cache-Control: no-cache' \
+                    -d "token=$SLACK_OAUTH_TOKEN" \
+                    -d "email=$PR_AUTHOR_EMAIL" \
+                    "https://slack.com/api/users.lookupByEmail")
+        SLACK_USER_ID=$(echo $SLACK_USER | jq -e '.user.id' | tr -d '"')
+
+        if [[ $SLACK_USER_ID == "null" ]]; then
+          echo "No Slack user found with email $PR_AUTHOR_EMAIL"
+          exit 1
+        fi
+
+        MESSAGE="*<< parameters.message >>*"
+        CHANNEL=$SLACK_USER_ID
+
+        if [[ -n "<< parameters.channel >>" ]]; then
+          MESSAGE="$MESSAGE\n<@$SLACK_USER_ID>"
+          CHANNEL="<< parameters.channel >>"
+        fi
+
+        BLOCKS="[
+          {
+            \"type\": \"section\",
+            \"text\": {
+              \"type\": \"mrkdwn\",
+              \"text\": \"$MESSAGE\"
+            },
+            \"accessory\": {
+              \"type\": \"button\",
+              \"text\": {
+                \"type\": \"plain_text\",
+                \"text\": \"Visit Job\"
+              },
+              \"url\": \"$CIRCLE_BUILD_URL\"
+            }
+          },
+          {
+            \"type\": \"section\",
+            \"text\": {
+              \"type\": \"mrkdwn\",
+              \"text\": \"*Pull Request:* <$CIRCLE_PULL_REQUEST|$PR_TITLE>\"
+            }
+          },
+          {
+            \"type\": \"context\",
+            \"elements\": [
+              {
+                \"type\": \"mrkdwn\",
+                \"text\": \"Project: *$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME*\"
+              },
+              {
+                \"type\": \"mrkdwn\",
+                \"text\": \"Branch: *$CIRCLE_BRANCH*\"
+              }
+            ]
+          }
+        ]"
+
+        CURL_ARGS=(
+              -X POST
+              -H 'Content-Type: application/x-www-form-urlencoded'
+              -H 'Cache-Control: no-cache'
+              -d "token=$SLACK_OAUTH_TOKEN"
+              -d 'as_user=true'
+              -d "channel=$CHANNEL"
+              -d "blocks=$BLOCKS"
+            )
+        curl "${CURL_ARGS[@]}" "https://slack.com/api/chat.postMessage"

@@ -1,13 +1,55 @@
-# Use the latest 2.1 version of CircleCI pipeline process engine. See: https://circleci.com/docs/2.0/configuration-reference
 version: 2.1
-# Use a package of configuration called an orb.
+
 orbs:
-  # Declare a dependency on the welcome-orb
-  welcome: circleci/welcome-orb@0.4.1
-# Orchestrate or schedule a set of jobs
+  # dev version needs to be manually deployed to accurately test commit changes.
+  # Once deployed, update <alpha> to reflect the version deployed.
+  ghpr: narrativescience/ghpr@dev:alpha
+
+commands:
+  pack-validate:
+    description: Pack and validate the orb config
+    steps:
+      - run:
+          name: Pack config
+          command: circleci config pack src > orb.yml
+      - run:
+          name: Valid orb.yml
+          command: circleci orb validate orb.yml
+
+jobs:
+  test:
+    machine: true
+    steps:
+      - ghpr/build-prospective-branch
+      - ghpr/slack-pr-author:
+          message: ":tada: Tests passed!"
+
+  publish:
+    machine: true
+    steps:
+      - pack-validate
+      - run:
+          name: Publish new orb version
+          command: |
+            # TODO figure out how to configure CLI so publishing works
+            circleci orb publish orb.yml "narrativescience/ghpr@$CIRCLE_TAG"
+
 workflows:
-  # Name the workflow "welcome"
-  welcome:
-    # Run the welcome/run job in its own container
+  pull_request:
     jobs:
-      - welcome/run
+      - test:
+          context: opensource
+          filters:
+            branches:
+              ignore:
+                - master
+  # TODO uncomment and make it possible to auto-publish
+  # publish:
+  #   jobs:
+  #     - publish:
+  #         context: opensource
+  #         filters:
+  #           tags:
+  #             only: /v[0-9]+(\.[0-9]+)*/
+  #           branches:
+  #             ignore: /.*/
