@@ -45,3 +45,7 @@ This orb uses the [email associated with commits](https://help.github.com/en/git
 to look up the user in a Slack workspace. Therefore, to receive notifications, committers
 should set their `user.email` in their `git config` to be the same email associated with their Slack account.
 Messages show as being sent by the user associated with the `SLACK_OAUTH_TOKEN`.
+
+#### Example notification
+
+<img width="400" alt="Example Slack notification" src="https://user-images.githubusercontent.com/29710511/77842739-9260c700-715b-11ea-8c67-0992340afbac.png">
