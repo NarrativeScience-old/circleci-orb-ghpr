@@ -67,7 +67,8 @@ steps:
 
         if [[ $SLACK_USER_ID == "null" ]]; then
           echo "No Slack user found with email $PR_AUTHOR_EMAIL"
-          exit 1
+          # Don't fail the command. This shouldn't be a blocker.
+          exit 0
         fi
 
         MESSAGE="*<< parameters.message >>*"
