@@ -176,10 +176,18 @@ steps:
           CHANNEL="<< parameters.channel >>"
         fi
 
-        WORKFLOW_NAME=$(curl \
+        # Check `CIRCLE_API_KEY` is set
+        if [[ -z ${CIRCLE_API_KEY+x} ]]; then
+          echo "CIRCLE_API_KEY needs to be set to retrieve the workflow name"
+          WORKFLOW_TEXT=""
+        else
+          WORKFLOW_NAME=$(curl \
           -X GET https://circleci.com/api/v2/workflow/$CIRCLE_WORKFLOW_ID \
-          --user "${CIRCLE_API_USER_TOKEN}:" \
+          --user "${CIRCLE_API_KEY}:" \
           -H 'Accept: application/json' | jq -r '.name' | tr -d '"')
+          WORKFLOW_URL="https://circleci.com/workflow-run/$CIRCLE_WORKFLOW_ID"
+          WORKFLOW_TEXT="<$WORKFLOW_URL|$WORKFLOW_NAME>"
+        fi
 
         BLOCKS="[
           {
@@ -193,21 +201,21 @@ steps:
             \"type\": \"section\",
             \"text\": {
                 \"type\": \"mrkdwn\",
-                \"text\": \"Pull Request: <$CIRCLE_PULL_REQUEST|$GITHUB_PR_TITLE>\"
+                \"text\": \"*Pull Request:* <$CIRCLE_PULL_REQUEST|$GITHUB_PR_TITLE>\"
             }
           },
           {
             \"type\": \"section\",
             \"text\": {
                 \"type\": \"mrkdwn\",
-                \"text\": \"Job: <$CIRCLE_BUILD_URL|$CIRCLE_JOB>\"
+                \"text\": \"*Job:* <$CIRCLE_BUILD_URL|$CIRCLE_JOB>\"
             },
           },
           {
             \"type\": \"section\",
             \"text\": {
                 \"type\": \"mrkdwn\",
-                \"text\": \"Workflow: $WORKFLOW_NAME\"
+                \"text\": \"*Workflow:* $WORKFLOW_TEXT\"
             }
           },
           {
