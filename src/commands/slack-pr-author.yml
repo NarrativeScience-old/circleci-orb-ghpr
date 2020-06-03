@@ -86,8 +86,8 @@ steps:
           || "<< parameters.get_slack_user_by >>" ==  "meseeks") \
         ]]; then
 
-          if [[ -z ${GITHUB_PR_AUTHOR_EMAIL+x} && "<< parameters.get_slack_user_by >>" !=  "meseeks" ]]; then
-            echo "GITHUB_PR_AUTHOR_EMAIL not set"
+          if [[ -z "$GITHUB_PR_AUTHOR_EMAIL" && "<< parameters.get_slack_user_by >>" !=  "meseeks" ]]; then
+            echo "GITHUB_PR_AUTHOR_EMAIL not set or is empty string"
             exit 1
           fi
 
@@ -119,16 +119,12 @@ steps:
           && -z "$SLACK_USER_ID" \
         ]]; then
 
-          if [[ -z ${GITHUB_PR_AUTHOR_USERNAME+x}  && "<< parameters.get_slack_user_by >>" !=  "meseeks" ]]; then
-            echo "GITHUB_PR_AUTHOR_USERNAME not set"
+          if [[ -z "$GITHUB_PR_AUTHOR_USERNAME"  && "<< parameters.get_slack_user_by >>" !=  "meseeks" ]]; then
+            echo "GITHUB_PR_AUTHOR_USERNAME not set or is empty string"
             exit 1
           fi
 
-          SLACK_USER_ID=$(
-            jq -r --arg u "$GITHUB_PR_AUTHOR_USERNAME" \
-              '.members | .[] \
-              | select(.profile.display_name == $u and .profile.display_name != "") \
-              | .id' /tmp/slack-users.json)
+          SLACK_USER_ID=$(jq -r --arg u "$GITHUB_PR_AUTHOR_USERNAME" '.members | .[] | select(.profile.display_name == $u and .profile.display_name != "") | .id' /tmp/slack-users.json)
           echo "SLACK_USER_ID by display_name: $SLACK_USER_ID"
         fi
 
@@ -138,13 +134,12 @@ steps:
           && -z "$SLACK_USER_ID" \
         ]]; then
 
-          if [[ -z ${GITHUB_PR_AUTHOR_NAME+x}  && "<< parameters.get_slack_user_by >>" !=  "meseeks" ]]; then
-            echo "GITHUB_PR_AUTHOR_NAME not set"
+          if [[ -z "$GITHUB_PR_AUTHOR_NAME"  && "<< parameters.get_slack_user_by >>" !=  "meseeks" ]]; then
+            echo "GITHUB_PR_AUTHOR_NAME not set or is empty string"
             exit 1
           fi
 
-          SLACK_USER_ID=$(
-            jq -r --arg u "$GITHUB_PR_AUTHOR_NAME" '.members | .[] | select(.profile.real_name == $u) | .id' /tmp/slack-users.json)
+          SLACK_USER_ID=$(jq -r --arg u "$GITHUB_PR_AUTHOR_NAME" '.members | .[] | select(.profile.real_name == $u) | .id' /tmp/slack-users.json)
           echo "SLACK_USER_ID by real_name: $SLACK_USER_ID"
         fi
 
@@ -154,14 +149,13 @@ steps:
           && -z "$SLACK_USER_ID" \
         ]]; then
 
-          if [[ -z ${GITHUB_PR_AUTHOR_USERNAME+x}  && "<< parameters.get_slack_user_by >>" !=  "meseeks" ]]; then
-            echo "GITHUB_PR_AUTHOR_USERNAME not set"
+          if [[ -z "$GITHUB_PR_AUTHOR_USERNAME"  && "<< parameters.get_slack_user_by >>" !=  "meseeks" ]]; then
+            echo "GITHUB_PR_AUTHOR_USERNAME not set or is empty string"
             exit 1
           fi
 
           SLACK_TITLE_MATCH_STRING="\[gh:$GITHUB_PR_AUTHOR_USERNAME\]"
-          SLACK_USER_ID=$(
-            jq -r --arg u "$SLACK_TITLE_MATCH_STRING" '.members | .[] | select(.profile.title | match($u)) | .id' /tmp/slack-users.json)
+          SLACK_USER_ID=$(jq -r --arg u "$SLACK_TITLE_MATCH_STRING" '.members | .[] | select(.profile.title | match($u)) | .id' /tmp/slack-users.json)
           echo "SLACK_USER_ID by title_tag: $SLACK_USER_ID"
         fi
 
