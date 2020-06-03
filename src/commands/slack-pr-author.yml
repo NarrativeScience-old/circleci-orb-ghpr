@@ -98,7 +98,6 @@ steps:
             -d "email=$GITHUB_PR_AUTHOR_EMAIL" \
             "https://slack.com/api/users.lookupByEmail")
           SLACK_USER_ID=$(echo $SLACK_USER | jq -r '.user.id' | tr -d '"')
-          echo $SLACK_USER | jq .
           echo "SLACK_USER_ID by email: $SLACK_USER_ID"
         fi
 
