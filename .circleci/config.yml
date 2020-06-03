@@ -20,7 +20,10 @@ jobs:
   test:
     machine: true
     steps:
-      - ghpr/get-pr-info
+      - ghpr/get-pr-info:
+          # get_pr_author_email: true
+          # get_pr_author_name: true
+          get_commit_message: true
       - ghpr/slack-pr-author:
           message: "slack by email should fail"
           get_slack_user_by: email
@@ -36,17 +39,6 @@ jobs:
       - ghpr/slack-pr-author:
           message: "slack by title_tag should succeed"
           get_slack_user_by: title_tag
-          when: always
-      - ghpr/get-pr-info:
-          get_pr_author_email: true
-          get_pr_author_name: true
-      - ghpr/slack-pr-author:
-          message: "slack by email should succeed"
-          get_slack_user_by: email
-          when: always
-      - ghpr/slack-pr-author:
-          message: "slack by real_name should succeed"
-          get_slack_user_by: real_name
           when: always
 
   publish:
