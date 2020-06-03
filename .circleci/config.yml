@@ -30,7 +30,7 @@ jobs:
           when: always
       - ghpr/slack-pr-author:
           message: "slack by name should succeed"
-          get_slack_user_by: name
+          get_slack_user_by: display_name
           when: always
       - ghpr/slack-pr-author:
           message: "slack by real_name should fail"

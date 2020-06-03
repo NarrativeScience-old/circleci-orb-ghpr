@@ -35,7 +35,7 @@ parameters:
       The mechanism by which to find the PR author's associated Slack user ID:
 
         `email` - Find a Slack user with the same email address as GITHUB_PR_AUTHOR_EMAIL.
-        `name` - Find a Slack user with their Slack profile name, i.e. "Display name",
+        `display_name` - Find a Slack user with their Slack profile name, i.e. "Display name",
             exactly equal to GITHUB_PR_AUTHOR_USERNAME. First match only.
         `real_name` - Find a Slack user with their Slack profile real_name field,
             i.e. "Full name", exactly equal to GITHUB_PR_AUTHOR_NAME. Fist match only.
@@ -45,7 +45,7 @@ parameters:
     type: enum
     enum:
       - email
-      - name
+      - display_name
       - real_name
       - title_tag
       - meseeks
@@ -119,8 +119,8 @@ steps:
             exit 1
           fi
 
-          SLACK_USER_ID=$(jq -r '.members | .[] | select(.profile.name=="$GITHUB_PR_AUTHOR_USERNAME") | .id' /tmp/slack-users.json)
-          echo "SLACK_USER_ID by name: $SLACK_USER_ID"
+          SLACK_USER_ID=$(jq -r '.members | .[] | select(.profile.display_name=="$GITHUB_PR_AUTHOR_USERNAME") | .id' /tmp/slack-users.json)
+          echo "SLACK_USER_ID by display_name: $SLACK_USER_ID"
         fi
 
         if [[ \
