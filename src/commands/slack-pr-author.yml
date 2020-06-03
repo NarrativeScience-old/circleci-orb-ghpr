@@ -84,7 +84,7 @@ steps:
           || "<< parameters.get_slack_user_by >>" ==  "meseeks") \
           # && -z "$SLACK_USER_ID" \
         ]]; then
-          if [[ -z ${GITHUB_PR_AUTHOR_EMAIL+x} ]]; then
+          if [[ -z "$GITHUB_PR_AUTHOR_EMAIL" ]]; then
             echo "GITHUB_PR_AUTHOR_EMAIL not set"
             exit 1
           fi
