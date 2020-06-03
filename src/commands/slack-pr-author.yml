@@ -99,6 +99,7 @@ steps:
             "https://slack.com/api/users.lookupByEmail")
           SLACK_USER_ID=$(echo $SLACK_USER | jq -r '.user.id' | tr -d '"')
           echo "SLACK_USER_ID by email: $SLACK_USER_ID"
+
         else
            SLACK_USERS=$(curl \
               -H 'Content-Type: application/x-www-form-urlencoded' \

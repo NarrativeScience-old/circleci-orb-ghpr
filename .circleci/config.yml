@@ -27,7 +27,7 @@ jobs:
           get_commit_message: true
       - ghpr/slack-pr-author:
           message: ":tada: Tests passed!"
-          get_slack_user_by: meseeks
+          get_slack_user_by: name
 
   publish:
     machine: true
