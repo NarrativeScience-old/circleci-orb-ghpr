@@ -109,7 +109,7 @@ steps:
         fi
 
         if [[ \
-          ("<< parameters.get_slack_user_by >>" == "name" \
+          ("<< parameters.get_slack_user_by >>" == "display_name" \
           || "<< parameters.get_slack_user_by >>" ==  "meseeks") \
           # && -z "$SLACK_USER_ID" \
         ]]; then
