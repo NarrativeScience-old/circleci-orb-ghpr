@@ -163,7 +163,7 @@ steps:
           echo "SLACK_USER_ID by title_tag: $SLACK_USER_ID"
         fi
 
-        if [[ -z "$SLACK_USER_ID" || "$SLACK_USER_ID" != "null" ]]; then
+        if [[ -z "$SLACK_USER_ID" || "$SLACK_USER_ID" == "null" ]]; then
           echo "Unable to find Slack user by << parameters.get_slack_user_by >>"
           exit 1
         fi
