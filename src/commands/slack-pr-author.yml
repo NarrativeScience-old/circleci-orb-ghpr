@@ -135,7 +135,7 @@ steps:
             exit 1
           fi
 
-          echo "$GITHUB_PR_AUTHOR_USERNAME"
+          echo "$GITHUB_PR_AUTHOR_NAME"
 
           SLACK_USER_ID="$(
             jq -r --arg u "$GITHUB_PR_AUTHOR_NAME" '.members | .[] | select(.profile.real_name == $u) | .id' /tmp/slack-users.json)"
