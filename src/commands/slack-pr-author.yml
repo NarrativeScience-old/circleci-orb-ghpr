@@ -120,7 +120,7 @@ steps:
           fi
 
           SLACK_USER_ID="$(
-            jq -r --arg u "$GITHUB_PR_AUTHOR_USERNAME" '.members | .[] | select(.profile.title | match($u)) | .id' /tmp/slack-users.json)"
+            jq -r --arg u "$GITHUB_PR_AUTHOR_USERNAME" '.members | .[] | select(.profile.display_name == $u) | .id' /tmp/slack-users.json)"
           echo "SLACK_USER_ID by display_name: $SLACK_USER_ID"
         fi
 
