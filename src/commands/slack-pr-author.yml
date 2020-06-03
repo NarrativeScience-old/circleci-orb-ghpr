@@ -2,7 +2,7 @@ description: |
   Send a Slack direct message to the PR author, or to a channel, @mentioning the PR author.
   Requires `SLACK_OAUTH_TOKEN` to be set as an environment variable.
 
-  For more details, see https://github.com/NarrativeScience/circleci-orb-ghpr#enabling-slack-notifactions
+  For more details, see https://github.com/NarrativeScience/circleci-orb-ghpr#enabling-slack-notifications
 parameters:
   message:
     description: |
@@ -62,7 +62,6 @@ parameters:
       - pass
     default: pass
 steps:
-  - get-pr-info
   - run:
       name: Slack PR author
       when: << parameters.when >>
@@ -85,6 +84,11 @@ steps:
           || "<< parameters.get_slack_user_by >>" ==  "meseeks") \
           # && -z "$SLACK_USER_ID" \
         ]]; then
+          if [[ -z ${GITHUB_PR_AUTHOR_EMAIL+x} ]]; then
+            echo "GITHUB_PR_AUTHOR_EMAIL not set"
+            exit 1
+          fi
+
           SLACK_USER=$(curl \
             -H 'Content-Type: application/x-www-form-urlencoded' \
             -H 'Cache-Control: no-cache' \
