@@ -34,7 +34,7 @@ steps:
         echo "export GITHUB_PR_NUMBER=$PR_NUMBER" >> $BASH_ENV
 
         API_GITHUB="https://api.github.com/repos/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME"
-        PR_REQUEST_URL="$API_GITHUB/pulls/$GITHUB_PR_NUMBER"
+        PR_REQUEST_URL="$API_GITHUB/pulls/$PR_NUMBER"
         PR_RESPONSE=$(curl --user "${GITHUB_USERNAME}:${GITHUB_PASSWORD}" "$PR_REQUEST_URL")
         echo $PR_RESPONSE | jq .
 
