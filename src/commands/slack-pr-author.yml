@@ -59,6 +59,9 @@ parameters:
     type: boolean
     default: true
 steps:
+  - get-pr-info:
+      get_pr_author_email: true
+      get_pr_author_name: true
   - run:
       name: Slack PR author
       when: << parameters.when >>
@@ -73,13 +76,10 @@ steps:
           exit 1
         fi
 
-        # Check `SLACK_OAUTH_TOKEN` is set
-        if [[ -z ${SLACK_OAUTH_TOKEN+x} ]]; then
+        if [[ -z "$SLACK_OAUTH_TOKEN" ]]; then
           echo "This command requires SLACK_OAUTH_TOKEN to be set"
           exit 1
         fi
-
-        SLACK_USER_ID=""
 
         if [[ \
           ("<< parameters.get_slack_user_by >>" == "email" \
@@ -97,14 +97,14 @@ steps:
             -d "token=$SLACK_OAUTH_TOKEN" \
             -d "email=$GITHUB_PR_AUTHOR_EMAIL" \
             "https://slack.com/api/users.lookupByEmail")
-          SLACK_USER_ID=$(echo $SLACK_USER | jq -r '.user.id' | tr -d '"')
+          SLACK_USER_ID=$(echo $SLACK_USER | jq '.user.id // empty' | tr -d '"')
           echo "SLACK_USER_ID by email: $SLACK_USER_ID"
         fi
 
         if [[ \
-          "<< parameters.get_slack_user_by >>" ==  "meseeks" \
-          || "<< parameters.get_slack_user_by >>" !=  "email" \
-          && (-z "$SLACK_USER_ID" || "$SLACK_USER_ID" == "null") \
+          ("<< parameters.get_slack_user_by >>" ==  "meseeks" \
+          || "<< parameters.get_slack_user_by >>" !=  "email") \
+          && -z "$SLACK_USER_ID" \
         ]]; then
            curl \
               -H 'Content-Type: application/x-www-form-urlencoded' \
@@ -116,7 +116,7 @@ steps:
         if [[ \
           ("<< parameters.get_slack_user_by >>" == "display_name" \
           || "<< parameters.get_slack_user_by >>" ==  "meseeks") \
-          && (-z "$SLACK_USER_ID" || "$SLACK_USER_ID" == "null") \
+          && -z "$SLACK_USER_ID" \
         ]]; then
 
           if [[ -z ${GITHUB_PR_AUTHOR_USERNAME+x}  && "<< parameters.get_slack_user_by >>" !=  "meseeks" ]]; then
@@ -125,14 +125,17 @@ steps:
           fi
 
           SLACK_USER_ID="$(
-            jq -r --arg u "$GITHUB_PR_AUTHOR_USERNAME" '.members | .[] | select(.profile.display_name == $u) | .id' /tmp/slack-users.json)"
+            jq -r --arg u "$GITHUB_PR_AUTHOR_USERNAME" \
+              '.members | .[] \
+              | select(.profile.display_name == $u and .profile.display_name != "") \
+              | .id // empty' /tmp/slack-users.json)"
           echo "SLACK_USER_ID by display_name: $SLACK_USER_ID"
         fi
 
         if [[ \
           ("<< parameters.get_slack_user_by >>" == "real_name" \
           || "<< parameters.get_slack_user_by >>" ==  "meseeks") \
-          && (-z "$SLACK_USER_ID" || "$SLACK_USER_ID" == "null") \
+          && -z "$SLACK_USER_ID" \
         ]]; then
 
           if [[ -z ${GITHUB_PR_AUTHOR_NAME+x}  && "<< parameters.get_slack_user_by >>" !=  "meseeks" ]]; then
@@ -148,7 +151,7 @@ steps:
         if [[ \
           ("<< parameters.get_slack_user_by >>" == "title_tag" \
           || "<< parameters.get_slack_user_by >>" ==  "meseeks") \
-          && (-z "$SLACK_USER_ID" || "$SLACK_USER_ID" == "null") \
+          && -z "$SLACK_USER_ID" \
         ]]; then
 
           if [[ -z ${GITHUB_PR_AUTHOR_USERNAME+x}  && "<< parameters.get_slack_user_by >>" !=  "meseeks" ]]; then
@@ -162,7 +165,7 @@ steps:
           echo "SLACK_USER_ID by title_tag: $SLACK_USER_ID"
         fi
 
-        if [[ -z "$SLACK_USER_ID" || "$SLACK_USER_ID" == "null" ]]; then
+        if [[ -z "$SLACK_USER_ID" ]]; then
           echo "Unable to find Slack user by << parameters.get_slack_user_by >>"
           exit 1
         fi
@@ -187,63 +190,63 @@ steps:
           WORKFLOW_TEXT="<$WORKFLOW_URL|$WORKFLOW_NAME>"
         fi
 
-        BLOCKS="[
-          {
-            \"type\": \"section\",
-            \"text\": {
-              \"type\": \"mrkdwn\",
-              \"text\": \"$MESSAGE\"
-            },
-          },
-          {
-            \"type\": \"section\",
-            \"text\": {
-                \"type\": \"mrkdwn\",
-                \"text\": \"*Pull Request:* <$CIRCLE_PULL_REQUEST|$GITHUB_PR_TITLE>\"
-            }
-          },
-          {
-            \"type\": \"section\",
-            \"text\": {
-                \"type\": \"mrkdwn\",
-                \"text\": \"*Job:* <$CIRCLE_BUILD_URL|$CIRCLE_JOB>\"
-            },
-          },
-          {
-            \"type\": \"section\",
-            \"text\": {
-                \"type\": \"mrkdwn\",
-                \"text\": \"*Workflow:* $WORKFLOW_TEXT\"
-            }
-          },
-          {
-            \"type\": \"context\",
-            \"elements\": [
-              {
-                \"type\": \"mrkdwn\",
-                \"text\": \"Project: *$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME*\"
-              },
-              {
-                \"type\": \"mrkdwn\",
-                \"text\": \"Branch: *$CIRCLE_BRANCH*\"
-              },
-            ]
-          }
-        ]"
+        # BLOCKS="[
+        #   {
+        #     \"type\": \"section\",
+        #     \"text\": {
+        #       \"type\": \"mrkdwn\",
+        #       \"text\": \"$MESSAGE\"
+        #     },
+        #   },
+        #   {
+        #     \"type\": \"section\",
+        #     \"text\": {
+        #         \"type\": \"mrkdwn\",
+        #         \"text\": \"*Pull Request:* <$CIRCLE_PULL_REQUEST|$GITHUB_PR_TITLE>\"
+        #     }
+        #   },
+        #   {
+        #     \"type\": \"section\",
+        #     \"text\": {
+        #         \"type\": \"mrkdwn\",
+        #         \"text\": \"*Job:* <$CIRCLE_BUILD_URL|$CIRCLE_JOB>\"
+        #     },
+        #   },
+        #   {
+        #     \"type\": \"section\",
+        #     \"text\": {
+        #         \"type\": \"mrkdwn\",
+        #         \"text\": \"*Workflow:* $WORKFLOW_TEXT\"
+        #     }
+        #   },
+        #   {
+        #     \"type\": \"context\",
+        #     \"elements\": [
+        #       {
+        #         \"type\": \"mrkdwn\",
+        #         \"text\": \"Project: *$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME*\"
+        #       },
+        #       {
+        #         \"type\": \"mrkdwn\",
+        #         \"text\": \"Branch: *$CIRCLE_BRANCH*\"
+        #       },
+        #     ]
+        #   }
+        # ]"
 
-        ATTACHMENTS="[
-          {
-            \"color\": \"<< parameters.color >>\",
-            \"blocks\": $BLOCKS
-          }
-        ]"
+        # ATTACHMENTS="[
+        #   {
+        #     \"color\": \"<< parameters.color >>\",
+        #     \"blocks\": $BLOCKS
+        #   }
+        # ]"
 
-        CURL_ARGS=(
-          -X POST
-          -H 'Content-Type: application/x-www-form-urlencoded'
-          -H 'Cache-Control: no-cache'
-          -d "token=$SLACK_OAUTH_TOKEN"
-          -d 'as_user=true'
-          -d "channel=$CHANNEL"
-          -d "attachments=$ATTACHMENTS")
-        curl "${CURL_ARGS[@]}" "https://slack.com/api/chat.postMessage"
+        # CURL_ARGS=(
+        #   -X POST
+        #   -H 'Content-Type: application/x-www-form-urlencoded'
+        #   -H 'Cache-Control: no-cache'
+        #   -d "token=$SLACK_OAUTH_TOKEN"
+        #   -d 'as_user=true'
+        #   -d "channel=$CHANNEL"
+        #   -d "attachments=$ATTACHMENTS")
+        # curl "${CURL_ARGS[@]}" "https://slack.com/api/chat.postMessage"

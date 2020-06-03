@@ -20,7 +20,6 @@ jobs:
   test:
     machine: true
     steps:
-      - ghpr/get-pr-info
       - ghpr/slack-pr-author:
           message: "foo"
           get_slack_user_by: meseeks
