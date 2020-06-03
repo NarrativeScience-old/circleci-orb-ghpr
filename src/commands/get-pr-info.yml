@@ -73,7 +73,7 @@ steps:
         <<# parameters.get_pr_author_name >>
         PR_AUTHOR_NAME=$(echo $COMMIT_RESPONSE | jq -e '.commit.author.name' | tr -d '"')
         echo "PR_AUTHOR_NAME: $PR_AUTHOR_NAME"
-        echo "export GITHUB_PR_AUTHOR_NAME=$PR_AUTHOR_NAME" >> $BASH_ENV
+        echo "export GITHUB_PR_AUTHOR_NAME='$PR_AUTHOR_NAME'" >> $BASH_ENV
         <</ parameters.get_pr_author_name >>
 
         <<# parameters.get_commit_message >>
