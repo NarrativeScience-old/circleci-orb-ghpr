@@ -14,6 +14,7 @@ steps:
       name: Build prospective merge branch
       command: |
         API_GITHUB="https://api.github.com/repos/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME"
+        PR_NUMBER=$(echo "$CIRCLE_PULL_REQUEST" | sed "s/.*\/pull\///")
         PR_REQUEST_URL="$API_GITHUB/pulls/$PR_NUMBER"
         PR_RESPONSE=$(curl --user "${GITHUB_USERNAME}:${GITHUB_PASSWORD}" "$PR_REQUEST_URL")
         GITHUB_PR_BASE_BRANCH=$(echo $PR_RESPONSE | jq -e '.base.ref' | tr -d '"')
