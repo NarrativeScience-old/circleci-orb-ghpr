@@ -51,16 +51,16 @@ steps:
         echo "export GITHUB_PR_AUTHOR_USERNAME=$PR_AUTHOR_USERNAME" >> $BASH_ENV
 
         PR_MERGE_COMMIT_SHA=$(echo $PR_RESPONSE | jq -e '.merge_commit_sha' | tr -d '"')
-        echo "PR_MERGE_COMMIT_SH: $PR_MERGE_COMMIT_SHA"
+        echo "PR_MERGE_COMMIT_SHA: $PR_MERGE_COMMIT_SHA"
         echo "export GITHUB_PR_MERGE_COMMIT_SHA=$PR_MERGE_COMMIT_SHA" >> $BASH_ENV
 
         <<# parameters.get_pr_author_email >>
-        # We need to use the email address associated with the MERGE_COMMIT_SHA since
+        # We need to use the email address associated with the PR_MERGE_COMMIT_SHA since
         # CIRCLE_SHA1 may have been authored by someone who is not the PR author.
         # Sadly, PR_RESPONSE doesn't include the email associated with the MERGE_COMMIT_SHA.
         # So we have to get that from the commit information.
 
-        COMMIT_REQUEST_URL="$API_GITHUB/commits/$MERGE_COMMIT_SHA"
+        COMMIT_REQUEST_URL="$API_GITHUB/commits/$PR_MERGE_COMMIT_SHA"
         COMMIT_RESPONSE=$(curl --user "${GITHUB_USERNAME}:${GITHUB_PASSWORD}" "$COMMIT_REQUEST_URL")
         echo $COMMIT_RESPONSE | jq .
         PR_AUTHOR_EMAIL=$(echo $COMMIT_RESPONSE | jq -e '.commit.author.email' | tr -d '"')
