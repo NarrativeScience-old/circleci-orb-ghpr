@@ -128,7 +128,7 @@ steps:
             jq -r --arg u "$GITHUB_PR_AUTHOR_USERNAME" \
               '.members | .[] \
               | select(.profile.display_name == $u and .profile.display_name != "") \
-              | .id // empty' /tmp/slack-users.json)"
+              | .id' /tmp/slack-users.json)"
           echo "SLACK_USER_ID by display_name: $SLACK_USER_ID"
         fi
 
