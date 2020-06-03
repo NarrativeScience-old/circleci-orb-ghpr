@@ -101,11 +101,11 @@ steps:
           echo "SLACK_USER_ID by email: $SLACK_USER_ID"
 
         else
-           SLACK_USERS=$(curl \
+           curl \
               -H 'Content-Type: application/x-www-form-urlencoded' \
               -H 'Cache-Control: no-cache' \
               -d "token=$SLACK_OAUTH_TOKEN" \
-              "https://slack.com/api/users.list")
+              "https://slack.com/api/users.list" > /tmp/slack-users.json
         fi
 
         if [[ \
@@ -119,7 +119,7 @@ steps:
             exit 1
           fi
 
-          SLACK_USER_ID=$(jq -r '.members | .[] | select(.profile.name=="$GITHUB_PR_AUTHOR_USERNAME") | .id' $SLACK_USERS)
+          SLACK_USER_ID=$(jq -r '.members | .[] | select(.profile.name=="$GITHUB_PR_AUTHOR_USERNAME") | .id' /tmp/slack-users.json)
           echo "SLACK_USER_ID by name: $SLACK_USER_ID"
         fi
 
@@ -134,7 +134,7 @@ steps:
             exit 1
           fi
 
-          SLACK_USER_ID=$(jq -r '.members | .[] | select(.profile.real_name=="$GITHUB_PR_AUTHOR_NAME") | .id' $SLACK_USERS)
+          SLACK_USER_ID=$(jq -r '.members | .[] | select(.profile.real_name=="$GITHUB_PR_AUTHOR_NAME") | .id' /tmp/slack-users.json)
           echo "SLACK_USER_ID by real_name: $SLACK_USER_ID"
         fi
 
@@ -150,6 +150,6 @@ steps:
           fi
 
           SLACK_TITLE_MATCH_STRING="\[gh:$GITHUB_PR_AUTHOR_USERNAME\]"
-          SLACK_USER_ID=$(jq -r '.members | .[] | select(.profile.title | match("$SLACK_TITLE_MATCH_STRING") | .id' $SLACK_USERS)
+          SLACK_USER_ID=$(jq -r '.members | .[] | select(.profile.title | match("$SLACK_TITLE_MATCH_STRING") | .id' /tmp/slack-users.json)
           echo "SLACK_USER_ID by title_tag: $SLACK_USER_ID"
         fi

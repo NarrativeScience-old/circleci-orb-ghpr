@@ -22,12 +22,12 @@ jobs:
     steps:
       - ghpr/build-prospective-branch
       - ghpr/get-pr-info:
-          # get_pr_author_email: true
+          get_pr_author_email: true
           get_pr_author_name: true
           get_commit_message: true
       - ghpr/slack-pr-author:
           message: ":tada: Tests passed!"
-          get_slack_user_by: name
+          get_slack_user_by: email
 
   publish:
     machine: true
