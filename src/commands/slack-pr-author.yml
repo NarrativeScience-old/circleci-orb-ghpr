@@ -98,13 +98,14 @@ steps:
             -d "email=$GITHUB_PR_AUTHOR_EMAIL" \
             "https://slack.com/api/users.lookupByEmail")
           SLACK_USER_ID=$(echo $SLACK_USER | jq -r '.user.id' | tr -d '"')
+          echo $SLACK_USER | jq .
           echo "SLACK_USER_ID by email: $SLACK_USER_ID"
         fi
 
         if [[ \
           "<< parameters.get_slack_user_by >>" ==  "meseeks" \
           || "<< parameters.get_slack_user_by >>" !=  "email" \
-          && (-z "$SLACK_USER_ID" || "$SLACK_USER_ID" != "null") \
+          && (-z "$SLACK_USER_ID" || "$SLACK_USER_ID" == "null") \
         ]]; then
            curl \
               -H 'Content-Type: application/x-www-form-urlencoded' \
@@ -132,7 +133,7 @@ steps:
         if [[ \
           ("<< parameters.get_slack_user_by >>" == "real_name" \
           || "<< parameters.get_slack_user_by >>" ==  "meseeks") \
-          && (-z "$SLACK_USER_ID" || "$SLACK_USER_ID" != "null") \
+          && (-z "$SLACK_USER_ID" || "$SLACK_USER_ID" == "null") \
         ]]; then
 
           if [[ -z ${GITHUB_PR_AUTHOR_NAME+x}  && "<< parameters.get_slack_user_by >>" !=  "meseeks" ]]; then
@@ -148,7 +149,7 @@ steps:
         if [[ \
           ("<< parameters.get_slack_user_by >>" == "title_tag" \
           || "<< parameters.get_slack_user_by >>" ==  "meseeks") \
-          && (-z "$SLACK_USER_ID" || "$SLACK_USER_ID" != "null") \
+          && (-z "$SLACK_USER_ID" || "$SLACK_USER_ID" == "null") \
         ]]; then
 
           if [[ -z ${GITHUB_PR_AUTHOR_USERNAME+x}  && "<< parameters.get_slack_user_by >>" !=  "meseeks" ]]; then
