@@ -1,5 +1,7 @@
 version: 2.1
-description: Bundle of utils for GitHub pull requests
+description: |
+  Set of git utilities to manage GitHub Pull Requests in CI.
+  This orb was created to address the need to simulate the result of merging the head branch into a PR's target base branch
 
 examples:
   test-pull-request:
@@ -20,3 +22,5 @@ examples:
                 when: on_fail
             - ghpr/slack-pr-author:
                 message: ":tada: Tests passed!"
+                get_slack_user_by: meseeks
+                color: "#1CBF43"
