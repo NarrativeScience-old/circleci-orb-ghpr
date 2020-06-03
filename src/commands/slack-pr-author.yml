@@ -14,7 +14,7 @@ parameters:
       The color to format the message with.
       Should be a hex value wrapped in quotes because we're in YAML land.
     type: string
-    default: "#FFFFF"
+    default: "#DDDDDD"
   when:
     description: Condition for when the message should be sent.
     type: enum
@@ -50,22 +50,23 @@ parameters:
       - title_tag
       - meseeks
     default: email
-  on_fail:
+  pass_on_fail:
     description: |
-      How the command should exit if anything fails. Ultimately, sending a Slack message
-      is a nice-to-have, but setting this to `fail` is a way to enforce enabling Slack
-      messages. An example scenario where it would be useful is if messages are sent to
-      a channel and the PR author should be tagged to get their attention.
-    type: enum
-    enum:
-      - fail
-      - pass
-    default: pass
+      Whether or not the command should exit if anything fails. Ultimately, sending a
+      Slack message is a nice-to-have, but setting this to `fail` is a way to enforce
+      enabling Slack messages. An example scenario where it would be useful is if
+      messages are sent to a channel and the PR author should be tagged to get their attention.
+    type: boolean
+    default: true
 steps:
   - run:
       name: Slack PR author
       when: << parameters.when >>
       command: |
+        <<# parameters.pass_on_fail >>
+        set +e
+        <</ parameters.pass_on_fail >>
+
         # Check `jq` dependency
         if ! (command -v jq >/dev/null 2>&1); then
           echo "This command requires jq to be installed"
@@ -83,7 +84,6 @@ steps:
         if [[ \
           ("<< parameters.get_slack_user_by >>" == "email" \
           || "<< parameters.get_slack_user_by >>" ==  "meseeks") \
-          # && -z "$SLACK_USER_ID" \
         ]]; then
 
           if [[ -z ${GITHUB_PR_AUTHOR_EMAIL+x} && "<< parameters.get_slack_user_by >>" !=  "meseeks" ]]; then
@@ -112,7 +112,7 @@ steps:
         if [[ \
           ("<< parameters.get_slack_user_by >>" == "display_name" \
           || "<< parameters.get_slack_user_by >>" ==  "meseeks") \
-          # && -z "$SLACK_USER_ID" \
+          && -z "$SLACK_USER_ID" \
         ]]; then
 
           if [[ -z ${GITHUB_PR_AUTHOR_USERNAME+x}  && "<< parameters.get_slack_user_by >>" !=  "meseeks" ]]; then
@@ -128,7 +128,7 @@ steps:
         if [[ \
           ("<< parameters.get_slack_user_by >>" == "real_name" \
           || "<< parameters.get_slack_user_by >>" ==  "meseeks") \
-          # && -z "$SLACK_USER_ID" \
+          && -z "$SLACK_USER_ID" \
         ]]; then
 
           if [[ -z ${GITHUB_PR_AUTHOR_NAME+x}  && "<< parameters.get_slack_user_by >>" !=  "meseeks" ]]; then
@@ -144,7 +144,7 @@ steps:
         if [[ \
           ("<< parameters.get_slack_user_by >>" == "title_tag" \
           || "<< parameters.get_slack_user_by >>" ==  "meseeks") \
-          # && -z "$SLACK_USER_ID" \
+          && -z "$SLACK_USER_ID" \
         ]]; then
 
           if [[ -z ${GITHUB_PR_AUTHOR_USERNAME+x}  && "<< parameters.get_slack_user_by >>" !=  "meseeks" ]]; then
@@ -157,3 +157,82 @@ steps:
             jq -r --arg u "$SLACK_TITLE_MATCH_STRING" '.members | .[] | select(.profile.title | match($u)) | .id' /tmp/slack-users.json)"
           echo "SLACK_USER_ID by title_tag: $SLACK_USER_ID"
         fi
+
+        if [[ -z "$SLACK_USER_ID" ]]; then
+          echo "Unable to find Slack user by << parameters.get_slack_user_by >>"
+          exit 1
+        fi
+
+        MESSAGE="*<< parameters.message >>*"
+        CHANNEL=$SLACK_USER_ID
+
+        if [[ -n "<< parameters.channel >>" ]]; then
+          MESSAGE="$MESSAGE\n<@$SLACK_USER_ID>"
+          CHANNEL="<< parameters.channel >>"
+        fi
+
+        WORKFLOW_NAME=$(curl \
+          -X GET https://circleci.com/api/v2/workflow/$CIRCLE_WORKFLOW_ID \
+          --user "${CIRCLE_API_USER_TOKEN}:" \
+          -H 'Accept: application/json' | jq -r '.name' | tr -d '"')
+
+        BLOCKS="[
+          {
+            \"type\": \"section\",
+            \"text\": {
+              \"type\": \"mrkdwn\",
+              \"text\": \"$MESSAGE\"
+            },
+          },
+          {
+            \"type\": \"section\",
+            \"text\": {
+                \"type\": \"mrkdwn\",
+                \"text\": \"Pull Request: <$CIRCLE_PULL_REQUEST|$GITHUB_PR_TITLE>\"
+            }
+          },
+          {
+            \"type\": \"section\",
+            \"text\": {
+                \"type\": \"mrkdwn\",
+                \"text\": \"Job: <$CIRCLE_BUILD_URL|$CIRCLE_JOB>\"
+            },
+          },
+          {
+            \"type\": \"section\",
+            \"text\": {
+                \"type\": \"mrkdwn\",
+                \"text\": \"Workflow: $WORKFLOW_NAME\"
+            }
+          },
+          {
+            \"type\": \"context\",
+            \"elements\": [
+              {
+                \"type\": \"mrkdwn\",
+                \"text\": \"Project: *$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME*\"
+              },
+              {
+                \"type\": \"mrkdwn\",
+                \"text\": \"Branch: *$CIRCLE_BRANCH*\"
+              },
+            ]
+          }
+        ]"
+
+        ATTACHMENTS="[
+          {
+            \"color\": \"<< parameters.color >>\",
+            \"blocks\": $BLOCKS
+          }
+        ]"
+
+        CURL_ARGS=(
+          -X POST
+          -H 'Content-Type: application/x-www-form-urlencoded'
+          -H 'Cache-Control: no-cache'
+          -d "token=$SLACK_OAUTH_TOKEN"
+          -d 'as_user=true'
+          -d "channel=$CHANNEL"
+          -d "attachments=$ATTACHMENTS")
+        curl "${CURL_ARGS[@]}" "https://slack.com/api/chat.postMessage"
