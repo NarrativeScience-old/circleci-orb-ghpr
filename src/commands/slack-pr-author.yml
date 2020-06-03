@@ -175,18 +175,13 @@ steps:
           CHANNEL="<< parameters.channel >>"
         fi
 
-        # Check `CIRCLECI_API_KEY` is set
-        if [[ -z ${CIRCLECI_API_KEY+x} ]]; then
-          echo "CIRCLECI_API_KEY needs to be set to retrieve the workflow name"
+        # Check `CIRCLE_API_USER_TOKEN` is set
+        if [[ -z ${CIRCLE_API_USER_TOKEN+x} ]]; then
+          echo "CIRCLE_API_USER_TOKEN needs to be set to retrieve the workflow name"
           WORKFLOW_TEXT=""
         else
-          WORKFLOW_RESPONSE=$(curl "https://circleci.com/api/v2/workflow/$CIRCLE_WORKFLOW_ID?circle-token=$CIRCLECI_API_KEY")
+          WORKFLOW_RESPONSE=$(curl "https://circleci.com/api/v2/workflow/$CIRCLE_WORKFLOW_ID?circle-token=$CIRCLE_API_USER_TOKEN")
           echo $WORKFLOW_RESPONSE | jq .
-
-          WORKFLOW_RESPONSE=$(curl "https://circleci.com/api/v2/workflow/$CIRCLE_WORKFLOW_ID" -H 'Circle-Token: $CIRCLECI_API_KEY')
-          echo $WORKFLOW_RESPONSE | jq .
-
-
           WORKFLOW_NAME=$(echo $WORKFLOW_RESPONSE | jq -r '.name' | tr -d '"')
           WORKFLOW_URL="https://circleci.com/workflow-run/$CIRCLE_WORKFLOW_ID"
           WORKFLOW_TEXT="<$WORKFLOW_URL|$WORKFLOW_NAME>"
