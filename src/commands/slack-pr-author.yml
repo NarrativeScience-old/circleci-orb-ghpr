@@ -150,6 +150,6 @@ steps:
           fi
 
           SLACK_TITLE_MATCH_STRING="\[gh:$GITHUB_PR_AUTHOR_USERNAME\]"
-          SLACK_USER_ID=$(jq -r '.members | .[] | select(.profile.title | match("$SLACK_TITLE_MATCH_STRING") | .id' /tmp/slack-users.json)
+          SLACK_USER_ID=$(jq -r '.members | .[] | select(.profile.title | match($SLACK_TITLE_MATCH_STRING) | .id' /tmp/slack-users.json)
           echo "SLACK_USER_ID by title_tag: $SLACK_USER_ID"
         fi
