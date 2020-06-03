@@ -10,7 +10,7 @@ parameters:
     default: false
 steps:
   - checkout
-  - get-base-branch
+  - get-pr-info
   - run:
       name: Build prospective merge branch
       command: |
@@ -18,7 +18,7 @@ steps:
         git config --global user.email "$GITHUB_EMAIL"
         git config --global user.name "$GITHUB_USERNAME"
         git fetch && git merge "origin/$GITHUB_PR_BASE_BRANCH" --no-edit
-        if [[ $? -ne 0 && "<< parameters.force >>" == "false" ]]; then
+        if [[ $? -ne 0 && << parameters.force >> == false ]]; then
           echo "Failed to merge $GITHUB_PR_BASE_BRANCH into $CIRCLE_BRANCH"
           exit 1
         fi

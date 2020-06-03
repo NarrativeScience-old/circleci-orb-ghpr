@@ -17,6 +17,9 @@ The commands in the orb will expose the following environment variables:
 * `GITHUB_PR_BASE_BRANCH` - The base branch for the PR.
 * `GITHUB_PR_NUMBER` - The number of the PR.
 
+All these commands will work out-of-the-box in jobs using the
+[`machine` executor](https://circleci.com/docs/2.0/executor-types/#using-machine).
+
 ## Getting Started
 
 To use this orb, there are a few environment variables to set.

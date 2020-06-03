@@ -1,0 +1,75 @@
+description: |
+  Gets and sets the following environment variables:
+
+    - GITHUB_PR_NUMBER
+    - GITHUB_PR_TITLE
+    - GITHUB_PR_BASE_BRANCH
+    - GITHUB_PR_AUTHOR_USERNAME
+    - GITHUB_PR_MERGE_COMMIT_SHA
+
+  Requires `GITHUB_EMAIL` and `GITHUB_USERNAME` to be set as environment variables.
+parameters:
+  get_pr_author_email:
+    description: |
+      If true, also sets GITHUB_PR_AUTHOR_EMAIL. This requires an additional API call.
+    type: boolean
+    default: false
+  get_commit_message:
+    description: |
+      If true, also set GITHUB_PR_COMMIT_MESSAGE. This requires an additional API call.
+    type: boolean
+    default: false
+steps:
+  - run:
+      name: Get PR information
+      command: |
+        # Check `jq` dependency
+        if ! (command -v jq >/dev/null 2>&1); then
+          echo "This command requires jq to be installed"
+          exit 1
+        fi
+
+        PR_NUMBER=$(echo "$CIRCLE_PULL_REQUEST" | sed "s/.*\/pull\///")
+        echo "$PR_NUMBER"
+        echo "export GITHUB_PR_NUMBER=$PR_NUMBER" >> $BASH_ENV
+
+        API_GITHUB="https://api.github.com/repos/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME"
+        PR_REQUEST_URL="$API_GITHUB/pulls/$GITHUB_PR_NUMBER"
+        PR_RESPONSE=$(curl --user "${GITHUB_USERNAME}:${GITHUB_PASSWORD}" "$PR_REQUEST_URL")
+
+        PR_TITLE=$(echo $PR_RESPONSE | jq -e '.title' | tr -d '"')
+        echo "$PR_TITLE"
+        echo "export GITHUB_PR_TITLE=$PR_TITLE" >> $BASH_ENV
+
+        BASE_BRANCH=$(echo $PR_RESPONSE | jq -e '.base.ref' | tr -d '"')
+        echo "$BASE_BRANCH"
+        echo "export GITHUB_PR_BASE_BRANCH=$BASE_BRANCH" >> $BASH_ENV
+
+        PR_AUTHOR_USERNAME=$(echo $PR_RESPONSE | jq -e '.user.login' | tr -d '"')
+        echo "$PR_AUTHOR_USERNAME"
+        echo "export GITHUB_PR_AUTHOR_USERNAME=$PR_AUTHOR_USERNAME" >> $BASH_ENV
+
+        PR_MERGE_COMMIT_SHA=$(echo $PR_RESPONSE | jq -e '.merge_commit_sha' | tr -d '"')
+        echo "$PR_MERGE_COMMIT_SHA"
+        echo "export GITHUB_PR_MERGE_COMMIT_SHA=$PR_MERGE_COMMIT_SHA" >> $BASH_ENV
+
+        <<# parameters.get_pr_author_email >>
+        # We need to use the email address associated with the MERGE_COMMIT_SHA since
+        # CIRCLE_SHA1 may have been authored by someone who is not the PR author.
+        # Sadly, PR_RESPONSE doesn't include the email associated with the MERGE_COMMIT_SHA.
+        # So we have to get that from the commit information.
+
+        COMMIT_REQUEST_URL="$API_GITHUB/commits/$MERGE_COMMIT_SHA"
+        COMMIT_RESPONSE=$(curl --user "${GITHUB_USERNAME}:${GITHUB_PASSWORD}" "$COMMIT_REQUEST_URL")
+        PR_AUTHOR_EMAIL=$(echo $COMMIT_RESPONSE | jq -e '.commit.author.email' | tr -d '"')
+        echo "$PR_AUTHOR_EMAIL"
+        echo "export GITHUB_PR_AUTHOR_EMAIL=$PR_AUTHOR_EMAIL" >> $BASH_ENV
+        <</ parameters.get_pr_author_email >>
+
+        <<# parameters.get_commit_message >>
+        COMMIT_REQUEST_URL="$API_GITHUB/commits/$CIRCLE_SHA1"
+        COMMIT_RESPONSE=$(curl --user "${GITHUB_USERNAME}:${GITHUB_PASSWORD}" "$COMMIT_REQUEST_URL")
+        PR_COMMIT_MESSAGE=$(echo $COMMIT_RESPONSE | jq -e '.commit.message' | tr -d '"')
+        echo "$PR_COMMIT_MESSAGE"
+        echo "export GITHUB_PR_COMMIT_MESSAGE=$PR_COMMIT_MESSAGE" >> $BASH_ENV
+        <</ parameters.get_commit_message >>
