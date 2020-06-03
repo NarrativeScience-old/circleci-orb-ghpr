@@ -22,7 +22,7 @@ jobs:
     steps:
       - ghpr/slack-pr-author:
           message: "foo"
-          get_slack_user_by: meseeks
+          get_slack_user_by: display_name
           color: "#f2c744"
 
   publish:
