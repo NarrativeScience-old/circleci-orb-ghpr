@@ -25,7 +25,7 @@ jobs:
           get_pr_author_name: true
           get_commit_message: true
       - ghpr/slack-pr-author:
-          message: "slack by email should fail"
+          message: "slack by email should fal"
           get_slack_user_by: email
           when: always
       - ghpr/slack-pr-author:
