@@ -116,7 +116,7 @@ steps:
         if [[ \
           ("<< parameters.get_slack_user_by >>" == "display_name" \
           || "<< parameters.get_slack_user_by >>" ==  "meseeks") \
-          && (-z "$SLACK_USER_ID" || "$SLACK_USER_ID" != "null") \
+          && (-z "$SLACK_USER_ID" || "$SLACK_USER_ID" == "null") \
         ]]; then
 
           if [[ -z ${GITHUB_PR_AUTHOR_USERNAME+x}  && "<< parameters.get_slack_user_by >>" !=  "meseeks" ]]; then
