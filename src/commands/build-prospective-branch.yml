@@ -10,10 +10,15 @@ parameters:
     default: false
 steps:
   - checkout
-  - get-pr-info
   - run:
       name: Build prospective merge branch
       command: |
+        API_GITHUB="https://api.github.com/repos/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME"
+        PR_REQUEST_URL="$API_GITHUB/pulls/$PR_NUMBER"
+        PR_RESPONSE=$(curl --user "${GITHUB_USERNAME}:${GITHUB_PASSWORD}" "$PR_REQUEST_URL")
+        GITHUB_PR_BASE_BRANCH=$(echo $PR_RESPONSE | jq -e '.base.ref' | tr -d '"')
+        echo "PR_BASE_BRANCH: $GITHUB_PR_BASE_BRANCH"
+
         set +e
         git config --global user.email "$GITHUB_EMAIL"
         git config --global user.name "$GITHUB_USERNAME"
