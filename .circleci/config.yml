@@ -20,6 +20,9 @@ jobs:
   test:
     machine: true
     steps:
+      - ghpr/get-pr-info:
+          get_pr_author_email: true
+          get_commit_message: true
       - ghpr/build-prospective-branch
       - ghpr/slack-pr-author:
           message: ":tada: Tests passed!"
