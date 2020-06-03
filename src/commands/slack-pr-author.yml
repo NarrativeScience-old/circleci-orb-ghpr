@@ -181,9 +181,7 @@ steps:
           WORKFLOW_TEXT=""
         else
           echo "$CIRCLE_WORKFLOW_ID"
-          WORKFLOW_RESPONSE=$(curl \
-            https://circleci.com/api/v2/workflow/$CIRCLE_WORKFLOW_ID \
-            --user $CIRCLECI_API_KEY:)
+          WORKFLOW_RESPONSE=$(curl https://circleci.com/api/v2/workflow/$CIRCLE_WORKFLOW_ID?circle-token=$CIRCLECI_API_KEY"
           echo $WORKFLOW_RESPONSE | jq .
           WORKFLOW_NAME=$(echo $WORKFLOW_RESPONSE | jq -r '.name' | tr -d '"')
           WORKFLOW_URL="https://circleci.com/workflow-run/$CIRCLE_WORKFLOW_ID"
