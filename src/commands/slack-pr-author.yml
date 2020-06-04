@@ -1,6 +1,7 @@
 description: |
   Send a Slack direct message to the PR author, or to a channel, @mentioning the PR author.
-  Requires `SLACK_OAUTH_TOKEN` to be set as an environment variable.
+  Requires `SLACK_OAUTH_TOKEN` to be set as an environment variable. If you'd like
+  to have the workflow name be displayed as well, `CIRCLECI_API_TOKEN` should be set.
 
   For more details, see https://github.com/NarrativeScience/circleci-orb-ghpr#enabling-slack-notifications
 parameters:
@@ -34,14 +35,14 @@ parameters:
     description: |
       The mechanism by which to find the PR author's associated Slack user ID:
 
-        `email` - Find a Slack user with the same email address as GITHUB_PR_AUTHOR_EMAIL.
-        `display_name` - Find a Slack user with their Slack profile name, i.e. "Display name",
-            exactly equal to GITHUB_PR_AUTHOR_USERNAME. First match only.
-        `real_name` - Find a Slack user with their Slack profile real_name field,
-            i.e. "Full name", exactly equal to GITHUB_PR_AUTHOR_NAME. Fist match only.
-        `title_tag` - Find a Slack user with a Slack profile title field, i.e. "What I do",
-            containing the string "[gh:GITHUB_PR_AUTHOR_USERNAME]". First match only.
-        `meseeks` - Try to employ all the mechanisms above, in order, to find a Slack user.
+          `email` - Find a Slack user with the same email address as GITHUB_PR_AUTHOR_EMAIL.
+          `display_name` - Find a Slack user with their Slack profile name, i.e. "Display name",
+              exactly equal to GITHUB_PR_AUTHOR_USERNAME. First match only.
+          `real_name` - Find a Slack user with their Slack profile real_name field,
+              i.e. "Full name", exactly equal to GITHUB_PR_AUTHOR_NAME. Fist match only.
+          `title_tag` - Find a Slack user with a Slack profile title field, i.e. "What I do",
+              containing the string "[gh:GITHUB_PR_AUTHOR_USERNAME]". First match only.
+          `meseeks` - Try to employ all the mechanisms above, in order, to find a Slack user.
     type: enum
     enum:
       - email

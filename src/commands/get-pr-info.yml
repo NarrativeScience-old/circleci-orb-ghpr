@@ -1,12 +1,13 @@
 description: |
   Gets and sets the following environment variables:
-
-    - GITHUB_PR_NUMBER
-    - GITHUB_PR_TITLE
-    - GITHUB_PR_BASE_BRANCH
-    - GITHUB_PR_AUTHOR_USERNAME
-
-  Requires `GITHUB_EMAIL` and `GITHUB_USERNAME` to be set as environment variables.
+      * `GITHUB_PR_BASE_BRANCH` - The base branch for the PR.
+      * `GITHUB_PR_NUMBER` - The number of the PR.
+      * `GITHUB_PR_TITLE` - The title of the PR.
+      * `GITHUB_PR_COMMIT_MESSAGE` - The current commit's message. (Optional)
+      * `GITHUB_PR_AUTHOR_USERNAME` - The PR author's username.
+      * `GITHUB_PR_AUTHOR_NAME` - The PR author's name. (Optional)
+      * `GITHUB_PR_AUTHOR_EMAIL` - The PR author's email address. (Optional)
+  Requires `GITHUB_EMAIL` and `GITHUB_PASSWORD` to be set as environment variables.
 parameters:
   get_pr_author_email:
     description: |
