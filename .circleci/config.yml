@@ -23,6 +23,8 @@ jobs:
       - ghpr/build-prospective-branch
       - ghpr/slack-pr-author:
           message: ":tada: Tests passed!"
+          get_slack_user_by: meseeks
+          color: "#f2c744"
 
   publish:
     machine: true
