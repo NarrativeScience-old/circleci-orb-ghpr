@@ -25,6 +25,7 @@ parameters:
     default: false
 steps:
   - run:
+      when: always
       name: Get PR information
       command: |
         # Check `jq` dependency

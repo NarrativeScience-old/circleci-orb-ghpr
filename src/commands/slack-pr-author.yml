@@ -66,11 +66,13 @@ steps:
       name: Slack PR author
       when: << parameters.when >>
       command: |
+        EXIT_STATUS=1
+
         <<# parameters.pass_on_fail >>
         set +e
+        EXIT_STATUS=0
         <</ parameters.pass_on_fail >>
 
-        # Check `jq` dependency
         if ! (command -v jq >/dev/null 2>&1); then
           echo "This command requires jq to be installed"
           exit 1
@@ -88,7 +90,7 @@ steps:
 
           if [[ -z "$GITHUB_PR_AUTHOR_EMAIL" && "<< parameters.get_slack_user_by >>" !=  "meseeks" ]]; then
             echo "GITHUB_PR_AUTHOR_EMAIL not set or is empty string"
-            exit 1
+            exit $EXIT_STATUS
           fi
 
           SLACK_USER=$(curl \
@@ -97,8 +99,10 @@ steps:
             -d "token=$SLACK_OAUTH_TOKEN" \
             -d "email=$GITHUB_PR_AUTHOR_EMAIL" \
             "https://slack.com/api/users.lookupByEmail")
+
+          echo $SLACK_USER | jq .
           SLACK_USER_ID=$(echo $SLACK_USER | jq '.user.id // empty' | tr -d '"')
-          echo "SLACK_USER_ID by email: $SLACK_USER_ID"
+          echo "SLACK_USER_ID by email ($GITHUB_PR_AUTHOR_EMAIL): $SLACK_USER_ID"
         fi
 
         if [[ \
@@ -121,11 +125,11 @@ steps:
 
           if [[ -z "$GITHUB_PR_AUTHOR_USERNAME"  && "<< parameters.get_slack_user_by >>" !=  "meseeks" ]]; then
             echo "GITHUB_PR_AUTHOR_USERNAME not set or is empty string"
-            exit 1
+            exit $EXIT_STATUS
           fi
 
           SLACK_USER_ID=$(jq -r --arg u "$GITHUB_PR_AUTHOR_USERNAME" '.members | .[] | select(.profile.display_name == $u and .profile.display_name != "") | .id' /tmp/slack-users.json)
-          echo "SLACK_USER_ID by display_name: $SLACK_USER_ID"
+          echo "SLACK_USER_ID by display_name ($GITHUB_PR_AUTHOR_USERNAME): $SLACK_USER_ID"
         fi
 
         if [[ \
@@ -136,11 +140,11 @@ steps:
 
           if [[ -z "$GITHUB_PR_AUTHOR_NAME"  && "<< parameters.get_slack_user_by >>" !=  "meseeks" ]]; then
             echo "GITHUB_PR_AUTHOR_NAME not set or is empty string"
-            exit 1
+            exit $EXIT_STATUS
           fi
 
           SLACK_USER_ID=$(jq -r --arg u "$GITHUB_PR_AUTHOR_NAME" '.members | .[] | select(.profile.real_name == $u) | .id' /tmp/slack-users.json)
-          echo "SLACK_USER_ID by real_name: $SLACK_USER_ID"
+          echo "SLACK_USER_ID by real_name ($GITHUB_PR_AUTHOR_NAME): $SLACK_USER_ID"
         fi
 
         if [[ \
@@ -151,17 +155,17 @@ steps:
 
           if [[ -z "$GITHUB_PR_AUTHOR_USERNAME"  && "<< parameters.get_slack_user_by >>" !=  "meseeks" ]]; then
             echo "GITHUB_PR_AUTHOR_USERNAME not set or is empty string"
-            exit 1
+            exit $EXIT_STATUS
           fi
 
           SLACK_TITLE_MATCH_STRING="\[gh:$GITHUB_PR_AUTHOR_USERNAME\]"
           SLACK_USER_ID=$(jq -r --arg u "$SLACK_TITLE_MATCH_STRING" '.members | .[] | select(.profile.title | match($u)) | .id' /tmp/slack-users.json)
-          echo "SLACK_USER_ID by title_tag: $SLACK_USER_ID"
+          echo "SLACK_USER_ID by title_tag ($SLACK_TITLE_MATCH_STRING): $SLACK_USER_ID"
         fi
 
         if [[ -z "$SLACK_USER_ID" ]]; then
           echo "Unable to find Slack user by << parameters.get_slack_user_by >>"
-          exit 1
+          exit $EXIT_STATUS
         fi
 
         MESSAGE="*<< parameters.message >>*"
@@ -172,75 +176,74 @@ steps:
           CHANNEL="<< parameters.channel >>"
         fi
 
-        # Check `CIRCLE_API_USER_TOKEN` is set
-        if [[ -z ${CIRCLE_API_USER_TOKEN+x} ]]; then
-          echo "CIRCLE_API_USER_TOKEN needs to be set to retrieve the workflow name"
+        if [[ -z ${CIRCLECI_API_TOKEN+x} ]]; then
+          echo "CIRCLECI_API_TOKEN needs to be set to retrieve the workflow name"
           WORKFLOW_TEXT=""
         else
-          WORKFLOW_RESPONSE=$(curl "https://circleci.com/api/v2/workflow/$CIRCLE_WORKFLOW_ID?circle-token=$CIRCLE_API_USER_TOKEN")
+          WORKFLOW_RESPONSE=$(curl "https://circleci.com/api/v2/workflow/$CIRCLE_WORKFLOW_ID?circle-token=$CIRCLECI_API_TOKEN")
           echo $WORKFLOW_RESPONSE | jq .
           WORKFLOW_NAME=$(echo $WORKFLOW_RESPONSE | jq -r '.name' | tr -d '"')
           WORKFLOW_URL="https://circleci.com/workflow-run/$CIRCLE_WORKFLOW_ID"
           WORKFLOW_TEXT="<$WORKFLOW_URL|$WORKFLOW_NAME>"
         fi
 
-        # BLOCKS="[
-        #   {
-        #     \"type\": \"section\",
-        #     \"text\": {
-        #       \"type\": \"mrkdwn\",
-        #       \"text\": \"$MESSAGE\"
-        #     },
-        #   },
-        #   {
-        #     \"type\": \"section\",
-        #     \"text\": {
-        #         \"type\": \"mrkdwn\",
-        #         \"text\": \"*Pull Request:* <$CIRCLE_PULL_REQUEST|$GITHUB_PR_TITLE>\"
-        #     }
-        #   },
-        #   {
-        #     \"type\": \"section\",
-        #     \"text\": {
-        #         \"type\": \"mrkdwn\",
-        #         \"text\": \"*Job:* <$CIRCLE_BUILD_URL|$CIRCLE_JOB>\"
-        #     },
-        #   },
-        #   {
-        #     \"type\": \"section\",
-        #     \"text\": {
-        #         \"type\": \"mrkdwn\",
-        #         \"text\": \"*Workflow:* $WORKFLOW_TEXT\"
-        #     }
-        #   },
-        #   {
-        #     \"type\": \"context\",
-        #     \"elements\": [
-        #       {
-        #         \"type\": \"mrkdwn\",
-        #         \"text\": \"Project: *$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME*\"
-        #       },
-        #       {
-        #         \"type\": \"mrkdwn\",
-        #         \"text\": \"Branch: *$CIRCLE_BRANCH*\"
-        #       },
-        #     ]
-        #   }
-        # ]"
+        BLOCKS="[
+          {
+            \"type\": \"section\",
+            \"text\": {
+              \"type\": \"mrkdwn\",
+              \"text\": \"$MESSAGE\"
+            },
+          },
+          {
+            \"type\": \"section\",
+            \"text\": {
+                \"type\": \"mrkdwn\",
+                \"text\": \"*Pull Request:* <$CIRCLE_PULL_REQUEST|$GITHUB_PR_TITLE>\"
+            }
+          },
+          {
+            \"type\": \"section\",
+            \"text\": {
+                \"type\": \"mrkdwn\",
+                \"text\": \"*Job:* <$CIRCLE_BUILD_URL|$CIRCLE_JOB>\"
+            },
+          },
+          {
+            \"type\": \"section\",
+            \"text\": {
+                \"type\": \"mrkdwn\",
+                \"text\": \"*Workflow:* $WORKFLOW_TEXT\"
+            }
+          },
+          {
+            \"type\": \"context\",
+            \"elements\": [
+              {
+                \"type\": \"mrkdwn\",
+                \"text\": \"Project: *$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME*\"
+              },
+              {
+                \"type\": \"mrkdwn\",
+                \"text\": \"Branch: *$CIRCLE_BRANCH*\"
+              },
+            ]
+          }
+        ]"
 
-        # ATTACHMENTS="[
-        #   {
-        #     \"color\": \"<< parameters.color >>\",
-        #     \"blocks\": $BLOCKS
-        #   }
-        # ]"
+        ATTACHMENTS="[
+          {
+            \"color\": \"<< parameters.color >>\",
+            \"blocks\": $BLOCKS
+          }
+        ]"
 
-        # CURL_ARGS=(
-        #   -X POST
-        #   -H 'Content-Type: application/x-www-form-urlencoded'
-        #   -H 'Cache-Control: no-cache'
-        #   -d "token=$SLACK_OAUTH_TOKEN"
-        #   -d 'as_user=true'
-        #   -d "channel=$CHANNEL"
-        #   -d "attachments=$ATTACHMENTS")
-        # curl "${CURL_ARGS[@]}" "https://slack.com/api/chat.postMessage"
+        CURL_ARGS=(
+          -X POST
+          -H 'Content-Type: application/x-www-form-urlencoded'
+          -H 'Cache-Control: no-cache'
+          -d "token=$SLACK_OAUTH_TOKEN"
+          -d 'as_user=true'
+          -d "channel=$CHANNEL"
+          -d "attachments=$ATTACHMENTS")
+        curl "${CURL_ARGS[@]}" "https://slack.com/api/chat.postMessage"
