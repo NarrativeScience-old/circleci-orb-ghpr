@@ -59,5 +59,5 @@ The bot user will need at least the following bot token scopes:
 Messages show as being sent by the user associated with the `SLACK_OAUTH_TOKEN`.
 
 #### Example notification
+<img width="714" alt="Screen Shot 2020-06-03 at 21 55 38" src="https://user-images.githubusercontent.com/29710511/83716664-29337f00-a5f6-11ea-988f-898093d2ae90.png">
 
-<img width="400" alt="Example Slack notification" src="https://user-images.githubusercontent.com/29710511/77842739-9260c700-715b-11ea-8c67-0992340afbac.png">
