@@ -1,9 +1,13 @@
 description: |
   Send a Slack direct message to the PR author, or to a channel, @mentioning the PR author.
-  Requires `SLACK_OAUTH_TOKEN` to be set as an environment variable. If you'd like
-  to have the workflow name be displayed as well, `CIRCLECI_API_TOKEN` should be set.
+  Requires `SLACK_OAUTH_TOKEN` to be set as an environment variable. If you'd like to have the workflow name be displayed as well, `CIRCLECI_API_TOKEN` should be set. For more details, see https://github.com/NarrativeScience/circleci-orb-ghpr#enabling-slack-notifications.
 
-  For more details, see https://github.com/NarrativeScience/circleci-orb-ghpr#enabling-slack-notifications
+  The following are the mechanisms (see `get_slack_user_by`) by which a Slack user can be found for the PR author:
+      * `email` - Find a Slack user with the same email address as GITHUB_PR_AUTHOR_EMAIL.
+      * `display_name` - Find a Slack user with their Slack profile name, i.e. "Display name", exactly equal to GITHUB_PR_AUTHOR_USERNAME. First match only.
+      * `real_name` - Find a Slack user with their Slack profile real_name field, i.e. "Full name", exactly equal to GITHUB_PR_AUTHOR_NAME. Fist match only.
+      * `title_tag` - Find a Slack user with a Slack profile title field, i.e. "What I do", containing the string "[gh:GITHUB_PR_AUTHOR_USERNAME]". First match only.
+      * `meseeks` - Try to employ all the mechanisms above, in order, to find a Slack user.
 parameters:
   message:
     description: |
@@ -32,17 +36,7 @@ parameters:
     type: string
     default: ""
   get_slack_user_by:
-    description: |
-      The mechanism by which to find the PR author's associated Slack user ID:
-
-          `email` - Find a Slack user with the same email address as GITHUB_PR_AUTHOR_EMAIL.
-          `display_name` - Find a Slack user with their Slack profile name, i.e. "Display name",
-              exactly equal to GITHUB_PR_AUTHOR_USERNAME. First match only.
-          `real_name` - Find a Slack user with their Slack profile real_name field,
-              i.e. "Full name", exactly equal to GITHUB_PR_AUTHOR_NAME. Fist match only.
-          `title_tag` - Find a Slack user with a Slack profile title field, i.e. "What I do",
-              containing the string "[gh:GITHUB_PR_AUTHOR_USERNAME]". First match only.
-          `meseeks` - Try to employ all the mechanisms above, in order, to find a Slack user.
+    description: The mechanism by which to find the PR author's associated Slack user ID.
     type: enum
     enum:
       - email
@@ -53,10 +47,7 @@ parameters:
     default: email
   pass_on_fail:
     description: |
-      Whether or not the command should exit if anything fails. Ultimately, sending a
-      Slack message is a nice-to-have, but setting this to `fail` is a way to enforce
-      enabling Slack messages. An example scenario where it would be useful is if
-      messages are sent to a channel and the PR author should be tagged to get their attention.
+      Whether or not the command should exit if anything fails. Ultimately, sending a Slack message is a nice-to-have, but setting this to `fail` is a way to enforce enabling Slack messages. An example scenario where it would be useful is if messages are sent to a channel and the PR author should be tagged to get their attention.
     type: boolean
     default: true
 steps:
