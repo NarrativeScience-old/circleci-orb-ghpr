@@ -7,7 +7,7 @@ description: |
       * `GITHUB_PR_AUTHOR_USERNAME` - The PR author's username.
       * `GITHUB_PR_AUTHOR_NAME` - The PR author's name. (Optional)
       * `GITHUB_PR_AUTHOR_EMAIL` - The PR author's email address. (Optional)
-  Requires `GITHUB_EMAIL` and `GITHUB_PASSWORD` to be set as environment variables.
+  Requires  `GITHUB_TOKEN` to be set as an environment variable.
 parameters:
   get_pr_author_email:
     description: |
