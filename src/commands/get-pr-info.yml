@@ -41,7 +41,7 @@ steps:
 
         API_GITHUB="https://api.github.com/repos/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME"
         PR_REQUEST_URL="$API_GITHUB/pulls/$PR_NUMBER"
-        PR_RESPONSE=$(curl --user "${GITHUB_USERNAME}:${GITHUB_PASSWORD}" "$PR_REQUEST_URL")
+        PR_RESPONSE=$(curl -H "Authorization: token $GITHUB_TOKEN" "$PR_REQUEST_URL")
 
         PR_TITLE=$(echo $PR_RESPONSE | jq -e '.title' | tr -d '"')
         echo "PR_TITLE: $PR_TITLE"
@@ -63,7 +63,7 @@ steps:
 
           PR_MERGE_COMMIT_SHA=$(echo $PR_RESPONSE | jq -e '.merge_commit_sha' | tr -d '"')
           COMMIT_REQUEST_URL="$API_GITHUB/commits/$PR_MERGE_COMMIT_SHA"
-          COMMIT_RESPONSE=$(curl --user "${GITHUB_USERNAME}:${GITHUB_PASSWORD}" "$COMMIT_REQUEST_URL")
+          COMMIT_RESPONSE=$(curl -H "Authorization: token $GITHUB_TOKEN" "$COMMIT_REQUEST_URL")
         fi
 
         <<# parameters.get_pr_author_email >>
@@ -80,7 +80,7 @@ steps:
 
         <<# parameters.get_commit_message >>
         COMMIT_REQUEST_URL="$API_GITHUB/commits/$CIRCLE_SHA1"
-        COMMIT_RESPONSE=$(curl --user "${GITHUB_USERNAME}:${GITHUB_PASSWORD}" "$COMMIT_REQUEST_URL")
+        COMMIT_RESPONSE=$(curl -H "Authorization: token $GITHUB_TOKEN" "$COMMIT_REQUEST_URL")
         PR_COMMIT_MESSAGE=$(echo $COMMIT_RESPONSE | jq -e '.commit.message' | tr -d '"')
         echo "PR_COMMIT_MESSAGE: $PR_COMMIT_MESSAGE"
         echo "export GITHUB_PR_COMMIT_MESSAGE='$PR_COMMIT_MESSAGE'" >> $BASH_ENV

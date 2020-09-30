@@ -22,5 +22,5 @@ steps:
         curl \
           -X POST \
           -d "{\"body\": \"<< parameters.comment >>\"}" \
-          --user "${GITHUB_USERNAME}:${GITHUB_PASSWORD}" \
+          -H "Authorization: token $GITHUB_TOKEN" \
           "https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/issues/${GITHUB_PR_NUMBER}/comments"
