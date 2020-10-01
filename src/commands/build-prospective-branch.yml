@@ -1,6 +1,6 @@
 description: |
   Builds the prospective merge branch by merging the head branch into the pull request's base branch.
-  Requires `GITHUB_EMAIL`, `GITHUB_USERNAME`, and `GITHUB_PASSWORD` to be set as environment variables.
+  Requires `GITHUB_EMAIL`, `GITHUB_USERNAME`, and `GITHUB_TOKEN` to be set as environment variables.
 parameters:
   force:
     description: |

@@ -1,6 +1,6 @@
 description: |
   Post a comment on the pull request.
-  Requires `GITHUB_USERNAME` and `GITHUB_PASSWORD` to be set as an environment variables.
+  Requires `GITHUB_TOKEN` to be set as an environment variable.
 parameters:
   comment:
     description: Content of the comment to post
