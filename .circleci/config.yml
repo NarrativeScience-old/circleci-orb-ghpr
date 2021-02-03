@@ -2,7 +2,7 @@ version: 2.1
 
 orbs:
   # dev version needs to be manually deployed to accurately test commit changes.
-  # Once deployed, update <alpha> to reflect the version deployed.
+  # Once deployed, update <alpha> to reflect the version deployed. Foo
   ghpr: narrativescience/ghpr@dev:alpha
 
 commands:
