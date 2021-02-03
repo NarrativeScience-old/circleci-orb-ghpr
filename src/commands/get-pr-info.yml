@@ -43,7 +43,8 @@ steps:
         PR_REQUEST_URL="$API_GITHUB/pulls/$PR_NUMBER"
         PR_RESPONSE=$(curl -H "Authorization: token $GITHUB_TOKEN" "$PR_REQUEST_URL")
 
-        echo jq . $PR_RESPONSE
+        echo "FOO"
+        echo $PR_RESPONSE
 
         PR_TITLE=$(echo $PR_RESPONSE | jq -e '.title' | tr -d '"')
         echo "PR_TITLE: $PR_TITLE"
