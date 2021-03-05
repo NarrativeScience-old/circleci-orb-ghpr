@@ -75,7 +75,7 @@ steps:
         <<# parameters.get_pr_author_name >>
         PR_AUTHOR_NAME=$(echo $COMMIT_RESPONSE | jq -e '.commit.author.name' | tr -d '"')
         echo "PR_AUTHOR_NAME: $PR_AUTHOR_NAME"
-        echo "export GITHUB_PR_AUTHOR_NAME='${PR_AUTHOR_NAME/"'"/}'" >> $BASH_ENV
+        echo "export GITHUB_PR_AUTHOR_NAME=\"$PR_AUTHOR_NAME\"" >> $BASH_ENV
         <</ parameters.get_pr_author_name >>
 
         <<# parameters.get_commit_message >>
@@ -83,5 +83,5 @@ steps:
         COMMIT_RESPONSE=$(curl -H "Authorization: token $GITHUB_TOKEN" "$COMMIT_REQUEST_URL")
         PR_COMMIT_MESSAGE=$(echo $COMMIT_RESPONSE | jq -e '.commit.message' | tr -d '"')
         echo "PR_COMMIT_MESSAGE: $PR_COMMIT_MESSAGE"
-        echo "export GITHUB_PR_COMMIT_MESSAGE='${PR_COMMIT_MESSAGE/"'"/}'" >> $BASH_ENV
+        echo "export GITHUB_PR_COMMIT_MESSAGE=\"$PR_COMMIT_MESSAGE\"" >> $BASH_ENV
         <</ parameters.get_commit_message >>
