@@ -230,6 +230,8 @@ steps:
           }
         ]"
 
+        echo $ATTACHMENTS
+
         CURL_ARGS=(
           -X POST
           -H 'Content-Type: application/x-www-form-urlencoded'
