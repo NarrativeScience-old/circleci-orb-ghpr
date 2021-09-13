@@ -93,7 +93,7 @@ steps:
             "https://slack.com/api/users.lookupByEmail")
 
           echo $SLACK_USER | jq .
-          SLACK_USER_ID=$(echo $SLACK_USER | jq '.user.id // empty' | tr -d '"')
+          SLACK_USER_ID=$(echo $SLACK_USER | jq '.user.id // empty' | tr -d "\"'")
           echo "SLACK_USER_ID by email ($GITHUB_PR_AUTHOR_EMAIL): $SLACK_USER_ID"
         fi
 
@@ -174,7 +174,7 @@ steps:
         else
           WORKFLOW_RESPONSE=$(curl "https://circleci.com/api/v2/workflow/$CIRCLE_WORKFLOW_ID?circle-token=$CIRCLECI_API_TOKEN")
           echo $WORKFLOW_RESPONSE | jq .
-          WORKFLOW_NAME=$(echo $WORKFLOW_RESPONSE | jq -r '.name' | tr -d '"')
+          WORKFLOW_NAME=$(echo $WORKFLOW_RESPONSE | jq -r '.name' | tr -d "\"'")
           WORKFLOW_URL="https://circleci.com/workflow-run/$CIRCLE_WORKFLOW_ID"
           WORKFLOW_TEXT="<$WORKFLOW_URL|$WORKFLOW_NAME>"
         fi

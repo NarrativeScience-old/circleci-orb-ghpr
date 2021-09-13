@@ -43,15 +43,15 @@ steps:
         PR_REQUEST_URL="$API_GITHUB/pulls/$PR_NUMBER"
         PR_RESPONSE=$(curl -H "Authorization: token $GITHUB_TOKEN" "$PR_REQUEST_URL")
 
-        PR_TITLE=$(echo $PR_RESPONSE | jq -e '.title' | tr -d '"')
+        PR_TITLE=$(echo $PR_RESPONSE | jq -e '.title' | tr -d "\"'")
         echo "PR_TITLE: $PR_TITLE"
         echo "export GITHUB_PR_TITLE='$PR_TITLE'" >> $BASH_ENV
 
-        PR_BASE_BRANCH=$(echo $PR_RESPONSE | jq -e '.base.ref' | tr -d '"')
+        PR_BASE_BRANCH=$(echo $PR_RESPONSE | jq -e '.base.ref' | tr -d "\"'")
         echo "PR_BASE_BRANCH: $PR_BASE_BRANCH"
         echo "export GITHUB_PR_BASE_BRANCH='$PR_BASE_BRANCH'" >> $BASH_ENV
 
-        PR_AUTHOR_USERNAME=$(echo $PR_RESPONSE | jq -e '.user.login' | tr -d '"')
+        PR_AUTHOR_USERNAME=$(echo $PR_RESPONSE | jq -e '.user.login' | tr -d "\"'")
         echo "PR_AUTHOR_USERNAME: $PR_AUTHOR_USERNAME"
         echo "export GITHUB_PR_AUTHOR_USERNAME='$PR_AUTHOR_USERNAME'" >> $BASH_ENV
 
@@ -61,19 +61,19 @@ steps:
           # Sadly, PR_RESPONSE doesn't include the email associated with the merge_commit_sha.
           # So we have to get that from the commit information.
 
-          PR_MERGE_COMMIT_SHA=$(echo $PR_RESPONSE | jq -e '.merge_commit_sha' | tr -d '"')
+          PR_MERGE_COMMIT_SHA=$(echo $PR_RESPONSE | jq -e '.merge_commit_sha' | tr -d "\"'")
           COMMIT_REQUEST_URL="$API_GITHUB/commits/$PR_MERGE_COMMIT_SHA"
           COMMIT_RESPONSE=$(curl -H "Authorization: token $GITHUB_TOKEN" "$COMMIT_REQUEST_URL")
         fi
 
         <<# parameters.get_pr_author_email >>
-        PR_AUTHOR_EMAIL=$(echo $COMMIT_RESPONSE | jq -e '.commit.author.email' | tr -d '"')
+        PR_AUTHOR_EMAIL=$(echo $COMMIT_RESPONSE | jq -e '.commit.author.email' | tr -d "\"'")
         echo "PR_AUTHOR_EMAIL: $PR_AUTHOR_EMAIL"
         echo "export GITHUB_PR_AUTHOR_EMAIL='$PR_AUTHOR_EMAIL'" >> $BASH_ENV
         <</ parameters.get_pr_author_email >>
 
         <<# parameters.get_pr_author_name >>
-        PR_AUTHOR_NAME=$(echo $COMMIT_RESPONSE | jq -e '.commit.author.name' | tr -d '"')
+        PR_AUTHOR_NAME=$(echo $COMMIT_RESPONSE | jq -e '.commit.author.name' | tr -d "\"'")
         echo "PR_AUTHOR_NAME: $PR_AUTHOR_NAME"
         echo "export GITHUB_PR_AUTHOR_NAME='$PR_AUTHOR_NAME'" >> $BASH_ENV
         <</ parameters.get_pr_author_name >>
@@ -81,7 +81,7 @@ steps:
         <<# parameters.get_commit_message >>
         COMMIT_REQUEST_URL="$API_GITHUB/commits/$CIRCLE_SHA1"
         COMMIT_RESPONSE=$(curl -H "Authorization: token $GITHUB_TOKEN" "$COMMIT_REQUEST_URL")
-        PR_COMMIT_MESSAGE=$(echo $COMMIT_RESPONSE | jq -e '.commit.message' | tr -d '"')
+        PR_COMMIT_MESSAGE=$(echo $COMMIT_RESPONSE | jq -e '.commit.message' | tr -d "\"'")
         echo "PR_COMMIT_MESSAGE: $PR_COMMIT_MESSAGE"
         echo "export GITHUB_PR_COMMIT_MESSAGE='$PR_COMMIT_MESSAGE'" >> $BASH_ENV
         <</ parameters.get_commit_message >>
