@@ -24,8 +24,8 @@ steps:
         git config --global user.name "$GITHUB_USERNAME"
         # Merge the branch with no commit and then create a custom commit message contianing the original commit message.
         git fetch && git merge "origin/$GITHUB_PR_BASE_BRANCH" --no-commit
-        git commit -am "Merging ${GITHUB_PR_BASE_BRANCH} into ${CIRCLE_BRANCH}. ${GITHUB_PR_COMMIT_MESSAGE}"
         if [[ $? -ne 0 && << parameters.force >> == false ]]; then
           echo "Failed to merge $GITHUB_PR_BASE_BRANCH into $CIRCLE_BRANCH"
           exit 1
         fi
+        git commit -am "Merging ${GITHUB_PR_BASE_BRANCH} into ${CIRCLE_BRANCH}. ${GITHUB_PR_COMMIT_MESSAGE}"
