@@ -29,3 +29,7 @@ steps:
           exit 1
         fi
         git commit -am "Merging ${GITHUB_PR_BASE_BRANCH} into ${CIRCLE_BRANCH}. ${GITHUB_PR_COMMIT_MESSAGE}"
+        if [[ $? -ne 0 ]]; then
+          echo "Commmit failed... nothing to commit...Continue anyway."
+          exit 0
+        fi
