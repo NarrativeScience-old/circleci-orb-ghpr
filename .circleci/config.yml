@@ -20,7 +20,7 @@ jobs:
   test:
     machine: true
     steps:
-      - ghpr/build-prospective-branch
+      - ghpr/build-prospective-branch:
           force: true
       - ghpr/slack-pr-author:
           message: ":tada: Tests passed!"
