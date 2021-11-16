@@ -8,9 +8,14 @@ parameters:
       By default, this is disabled, to allow failing when a merge conflict occurs.
     type: boolean
     default: false
+  get_commit_message:
+    description: If true, also sets GITHUB_PR_COMMIT_MESSAGE. This requires an additional API call.
+    type: boolean
+    default: false
 steps:
   - checkout
-  - get-pr-info
+  - get-pr-info:
+      get_commit_message: << parameters.get_commit_message >>
   - run:
       name: Build prospective merge branch
       command: |
