@@ -21,6 +21,7 @@ jobs:
     machine: true
     steps:
       - ghpr/build-prospective-branch
+          force: true
       - ghpr/slack-pr-author:
           message: ":tada: Tests passed!"
           get_slack_user_by: meseeks
