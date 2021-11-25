@@ -8,17 +8,28 @@ parameters:
       By default, this is disabled, to allow failing when a merge conflict occurs.
     type: boolean
     default: false
+  get_commit_message:
+    description: If true, also sets GITHUB_PR_COMMIT_MESSAGE. This requires an additional API call.
+    type: boolean
+    default: false
 steps:
   - checkout
-  - get-pr-info
+  - get-pr-info:
+      get_commit_message: << parameters.get_commit_message >>
   - run:
       name: Build prospective merge branch
       command: |
         set +e
         git config --global user.email "$GITHUB_EMAIL"
         git config --global user.name "$GITHUB_USERNAME"
-        git fetch && git merge "origin/$GITHUB_PR_BASE_BRANCH" --no-edit
+        # Merge the branch with no commit and then create a custom commit message contianing the original commit message.
+        git fetch && git merge "origin/$GITHUB_PR_BASE_BRANCH" --no-commit
         if [[ $? -ne 0 && << parameters.force >> == false ]]; then
           echo "Failed to merge $GITHUB_PR_BASE_BRANCH into $CIRCLE_BRANCH"
           exit 1
+        fi
+        git commit -am "Merging ${GITHUB_PR_BASE_BRANCH} into ${CIRCLE_BRANCH}. ${GITHUB_PR_COMMIT_MESSAGE}"
+        if [[ $? -ne 0 ]]; then
+          echo "Commmit failed... nothing to commit...Continue anyway."
+          exit 0
         fi

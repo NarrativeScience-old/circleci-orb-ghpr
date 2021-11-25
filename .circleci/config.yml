@@ -3,7 +3,7 @@ version: 2.1
 orbs:
   # dev version needs to be manually deployed to accurately test commit changes.
   # Once deployed, update <alpha> to reflect the version deployed.
-  ghpr: narrativescience/ghpr@dev:alpha
+  ghpr: narrativescience/ghpr@dev:1.1.5
 
 commands:
   pack-validate:
@@ -20,7 +20,8 @@ jobs:
   test:
     machine: true
     steps:
-      - ghpr/build-prospective-branch
+      - ghpr/build-prospective-branch:
+          force: true
       - ghpr/slack-pr-author:
           message: ":tada: Tests passed!"
           get_slack_user_by: meseeks
